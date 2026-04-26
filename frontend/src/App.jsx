@@ -1,144 +1,21 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from './assets/vite.svg'
-// import heroImg from './assets/hero.png'
-// import './App.css'
-
-// function App() {
-//   const [count, setCount] = useState(0)
-
-//   return (
-//     <>
-//       <section id="center">
-//         <div className="hero">
-//           <img src={heroImg} className="base" width="170" height="179" alt="" />
-//           <img src={reactLogo} className="framework" alt="React logo" />
-//           <img src={viteLogo} className="vite" alt="Vite logo" />
-//         </div>
-//         <div>
-//           <h1>Get started</h1>
-//           <p>
-//             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-//           </p>
-//         </div>
-//         <button
-//           type="button"
-//           className="counter"
-//           onClick={() => setCount((count) => count + 1)}
-//         >
-//           Count is {count}
-//         </button>
-//       </section>
-
-//       <div className="ticks"></div>
-
-//       <section id="next-steps">
-//         <div id="docs">
-//           <svg className="icon" role="presentation" aria-hidden="true">
-//             <use href="/icons.svg#documentation-icon"></use>
-//           </svg>
-//           <h2>Documentation</h2>
-//           <p>Your questions, answered</p>
-//           <ul>
-//             <li>
-//               <a href="https://vite.dev/" target="_blank">
-//                 <img className="logo" src={viteLogo} alt="" />
-//                 Explore Vite
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://react.dev/" target="_blank">
-//                 <img className="button-icon" src={reactLogo} alt="" />
-//                 Learn more
-//               </a>
-//             </li>
-//           </ul>
-//         </div>
-//         <div id="social">
-//           <svg className="icon" role="presentation" aria-hidden="true">
-//             <use href="/icons.svg#social-icon"></use>
-//           </svg>
-//           <h2>Connect with us</h2>
-//           <p>Join the Vite community</p>
-//           <ul>
-//             <li>
-//               <a href="https://github.com/vitejs/vite" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#github-icon"></use>
-//                 </svg>
-//                 GitHub
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://chat.vite.dev/" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#discord-icon"></use>
-//                 </svg>
-//                 Discord
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://x.com/vite_js" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#x-icon"></use>
-//                 </svg>
-//                 X.com
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://bsky.app/profile/vite.dev" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#bluesky-icon"></use>
-//                 </svg>
-//                 Bluesky
-//               </a>
-//             </li>
-//           </ul>
-//         </div>
-//       </section>
-
-//       <div className="ticks"></div>
-//       <section id="spacer"></section>
-//     </>
-//   )
-// }
-
-// export default App
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { VenetianMask } from 'lucide-react';
+
 function App() {
-  // Quản lý trạng thái dữ liệu
   const [masks, setMasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Gọi API ngay khi trang web vừa tải xong
   useEffect(() => {
     fetch('http://localhost:8000/api/masks')
       .then(res => {
-        if (!res.ok) throw new Error('Không thể kết nối với máy chủ');
+        if (!res.ok) throw new Error('Failed to connect to the gallery server.');
         return res.json();
       })
       .then(data => {
         setMasks(data);
-        setLoading(false); // Tắt hiệu ứng loading
+        setLoading(false);
       })
       .catch(err => {
         setError(err.message);
@@ -146,79 +23,97 @@ function App() {
       });
   }, []);
 
-  // Thiết lập Animation cho danh sách (hiện lên lần lượt)
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.15 } // Khoảng trễ giữa các mặt nạ
+      transition: { staggerChildren: 0.1 } // motion.duration.instant (100ms) stagger
     }
   };
 
-  // Thiết lập Animation cho từng chiếc thẻ mặt nạ (trượt từ dưới lên)
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.25, ease: "easeOut" } // motion.duration.fast (250ms)
+    }
   };
 
   return (
-    // Nền trắng ngà (Gallery Style), chữ đen xám
-    <div className="min-h-screen bg-[#F9F9F7] text-gray-900 font-sans p-8 md:p-16">
+    <div className="min-h-screen bg-surface text-tertiary p-6 md:p-8 flex flex-col items-center">
       
-      {/* Phần Tiêu đề chính */}
-      <header className="mb-16 text-center">
+      <header className="mb-12 text-left max-w-7xl w-full border-b border-inverse pb-6">
         <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[#8B0000]"
+          transition={{ duration: 0.25 }}
+          className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-tertiary uppercase"
         >
-          MẶT NẠ TUỒNG
+          Vietnamese Tuong Masks
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-gray-500 italic"
+          transition={{ delay: 0.1, duration: 0.25 }}
+          className="text-lg text-tertiary opacity-80 font-normal"
         >
-          Sưu tập qua các Nghệ nhân miền Trung
+          A curated exhibition of traditional theatrical masks.
         </motion.p>
       </header>
 
-      {/* Trạng thái Loading hoặc Lỗi */}
-      {loading && <p className="text-center text-gray-500 animate-pulse">Đang tải dữ liệu từ bảo tàng...</p>}
-      {error && <p className="text-center text-red-500 font-semibold">Lỗi: {error}</p>}
+      {/* States: Loading, Error, Empty */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center flex-1 w-full" aria-live="polite">
+          <div className="w-8 h-8 border-2 border-tertiary border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-md text-tertiary uppercase tracking-widest">Loading exhibition...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="flex flex-col items-center justify-center flex-1 w-full" role="alert">
+          <p className="text-secondary font-bold text-xl mb-2 uppercase tracking-widest">Error loading gallery</p>
+          <p className="text-secondary">{error}</p>
+        </div>
+      )}
 
-      {/* Khu vực hiển thị danh sách Mặt Nạ */}
-      {!loading && !error && (
-        <motion.div 
+      {!loading && !error && masks.length === 0 && (
+        <div className="flex flex-col items-center justify-center flex-1 w-full" aria-live="polite">
+          <p className="text-md text-tertiary opacity-70 uppercase tracking-widest">No masks currently on display.</p>
+        </div>
+      )}
+
+      {/* Grid */}
+      {!loading && !error && masks.length > 0 && (
+        <motion.main 
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 max-w-6xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 max-w-7xl w-full"
         >
           {masks.map((mask) => (
-            <motion.div 
+            <motion.button 
               variants={itemVariants} 
               key={mask.id} 
-              className="group cursor-pointer flex flex-col items-center bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
+              className="group flex flex-col items-start bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-tertiary focus-visible:ring-offset-4 focus-visible:ring-offset-surface cursor-pointer text-left w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={`View details for ${mask.name}`}
             >
-              {/* Khung chứa ảnh: Vì chưa có ảnh thật nên dùng Icon, khi hover sẽ đổi màu Đỏ */}
-              <div className="w-32 h-32 mb-6 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 group-hover:text-[#8B0000] group-hover:bg-red-50 transition-colors duration-500">
-                <VenetianMask size={64} strokeWidth={1.5} />
+              <div className="w-full aspect-[4/5] mb-4 bg-inverse flex items-center justify-center text-primary group-hover:bg-tertiary transition-colors duration-250 border border-inverse group-hover:border-tertiary">
+                {/* Placeholder Image */}
+                <VenetianMask size={64} strokeWidth={1} className="text-tertiary group-hover:text-surface transition-colors duration-250" />
               </div>
               
-              {/* Thông tin Text */}
-              <div className="text-center">
-                <h3 className="text-xl font-bold text-gray-900 tracking-wide uppercase mb-2">
+              <div className="w-full px-1">
+                <h3 className="text-md font-bold text-tertiary uppercase truncate" title={mask.name}>
                   {mask.name}
                 </h3>
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-sm text-tertiary opacity-60 truncate mt-1" title={mask.category}>
                   {mask.category}
                 </p>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
-        </motion.div>
+        </motion.main>
       )}
     </div>
   );
