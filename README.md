@@ -60,21 +60,5 @@ This project is a monorepo containing both the frontend application and the back
    ```
 4. Open your browser and navigate to `http://localhost:5173`.
 
----
 
-## 🎨 Design System
 
-The UI strictly adheres to a set of design tokens to ensure consistency and WCAG 2.2 AA accessibility:
-- **Colors:**
-  - `Surface` (Background): `#000000`
-  - `Tertiary` (Primary Text): `#ebe5ce`
-  - `Inverse` (Cards/Containers): `#252525`
-- **Typography:** `PPMori` (fallback to `sans-serif`), featuring a large, crisp typography scale.
-- **Interactions:** Fully keyboard accessible (`Tab` navigation) with prominent focus rings and smooth `250ms` hover transitions.
-
----
-
-## 🖼 Adding Mask Images
-Currently, the database is initialized with placeholders. To display actual mask images:
-1. Place your `.png` or `.jpg` image files into the `backend/static/images/` directory.
-2. Ensure the file names match the `image_url` paths defined in your database (e.g., `bat_vuong.png`).
