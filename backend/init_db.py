@@ -30,6 +30,7 @@ def init_db():
         ("tao_thao", "Tào Tháo", "Tuồng Cổ", "http://localhost:8000/static/images/tao_thao.png"),
         ("quan_cong", "Quan Công", "Tuồng Cổ", "http://localhost:8000/static/images/quan_cong.png"),
         ("truong_phi", "Trương Phi", "Tuồng Cổ", "http://localhost:8000/static/images/truong_phi.png"),
+        ("ac_ba", "Ác Ba", "Tuồng Cổ", "http://localhost:8000/static/images/ac_ba.png"),
     ]
 
     # Xóa dữ liệu cũ nếu có để tránh trùng lặp khi chạy lại
@@ -38,9 +39,9 @@ def init_db():
     # Chèn dữ liệu mẫu
     cursor.executemany('INSERT INTO masks (id, name, category, image_url) VALUES (?, ?, ?, ?)', sample_masks)
 
-    # Tạo thêm các placeholder cho đủ 115 mặt nạ
+    # Tạo thêm các placeholder cho đủ 12 mặt nạ
     placeholders = []
-    for i in range(len(sample_masks) + 1, 116):
+    for i in range(len(sample_masks) + 1, 13):
         mask_id = f"mask_{i}"
         name = f"Mặt nạ số {i}"
         category = "Đang cập nhật"
@@ -51,7 +52,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print(f"Database masks.db initialized with {115} records.")
+    print(f"Database masks.db initialized with {12} records.")
 
 if __name__ == "__main__":
     init_db()
