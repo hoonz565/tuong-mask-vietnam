@@ -33,8 +33,8 @@ function App() {
             spirit: Math.floor(Math.random() * 60) + 40,
             ferocity: Math.floor(Math.random() * 60) + 40,
           },
-          techId: `DATA_${String(index + 1).padStart(3, '0')}`,
-          coords: `${(Math.random() * 90).toFixed(4)}° N, ${(Math.random() * 180).toFixed(4)}° E`
+          // techId: `DATA_${String(index + 1).padStart(3, '0')}`,
+          // coords: `${(Math.random() * 90).toFixed(4)}° N, ${(Math.random() * 180).toFixed(4)}° E`
         }));
         setMasks(augmentedData);
         if (augmentedData.length > 0) setActiveMask(augmentedData[0]);
