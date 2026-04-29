@@ -3,6 +3,7 @@ import CustomCursor from './components/layout/CustomCursor';
 import BackgroundText from './components/layout/BackgroundText';
 import Header from './components/layout/Header';
 import Hero from './components/layout/Hero';
+import GalleryToolbar from './components/layout/GalleryToolbar';
 import GridView from './components/gallery/GridView';
 import ListView from './components/gallery/ListView';
 import StatsModal from './components/gallery/StatsModal';
@@ -67,10 +68,13 @@ function App() {
     <div className="min-h-screen bg-surface text-tertiary cyber-grid-bg relative overflow-hidden flex flex-col items-center">
       <CustomCursor />
       <BackgroundText />
-      <Header viewMode={viewMode} setViewMode={setViewMode} />
+      <Header />
 
       {/* Hero — always visible above the gallery */}
       <Hero />
+
+      {/* Gallery toolbar — sits between Hero and the mask list */}
+      <GalleryToolbar viewMode={viewMode} setViewMode={setViewMode} total={masks.length || null} />
 
       {/* Main Content Area */}
       <div className="z-10 w-full flex-1 flex flex-col items-center p-6 md:p-12">
