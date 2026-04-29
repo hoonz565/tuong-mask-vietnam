@@ -69,9 +69,11 @@ function App() {
       <BackgroundText />
       <Header viewMode={viewMode} setViewMode={setViewMode} />
 
+      {/* Hero — always visible above the gallery */}
+      <Hero />
+
       {/* Main Content Area */}
       <div className="z-10 w-full flex-1 flex flex-col items-center p-6 md:p-12">
-        {viewMode === 'grid' && <Hero />}
 
         {loading && (
           <div className="flex flex-col items-center justify-center w-full my-12" aria-live="polite">
