@@ -20,39 +20,31 @@ def init_db():
 
     # Dữ liệu mẫu (một số mặt nạ nổi tiếng)
     sample_masks = [
-        ("bat_vuong", "Bát Vương", "Tuồng Cổ", "http://localhost:8000/static/images/bat_vuong.png"),
-        ("khuong_linh_ta", "Khương Linh Tá", "Tuồng Cổ", "http://localhost:8000/static/images/khuong_linh_ta.png"),
-        ("ta_on_dinh", "Tạ Ôn Đình", "Tuồng Cổ", "http://localhost:8000/static/images/ta_on_dinh.png"),
-        ("dong_kim_lan", "Đổng Kim Lân", "Tuồng Cổ", "http://localhost:8000/static/images/dong_kim_lan.png"),
-        ("luu_xuan_hong", "Lưu Xuân Hồng", "Tuồng Cổ", "http://localhost:8000/static/images/luu_xuan_hong.png"),
-        ("dao_tam_xuan", "Đào Tam Xuân", "Tuồng Cổ", "http://localhost:8000/static/images/dao_tam_xuan.png"),
-        ("trinh_an", "Trịnh Ân", "Tuồng Cổ", "http://localhost:8000/static/images/trinh_an.png"),
-        ("tao_thao", "Tào Tháo", "Tuồng Cổ", "http://localhost:8000/static/images/tao_thao.png"),
-        ("quan_cong", "Quan Công", "Tuồng Cổ", "http://localhost:8000/static/images/quan_cong.png"),
-        ("truong_phi", "Trương Phi", "Tuồng Cổ", "http://localhost:8000/static/images/truong_phi.png"),
-        ("ac_ba", "Ác Ba", "Tuồng Cổ", "http://localhost:8000/static/images/ac_ba.png"),
+        ("ac_ba", "Ác Ba", "Tuồng Cổ", "http://localhost:8000/static/images/1.png"),
+        ("ac_tang", "Ác Tăng", "Tuồng Sơn Hậu", "http://localhost:8000/static/images/2.png"),
+        ("bach_vien", "Bạch Viên", "Tuồng Thanh Xà-Bạch Xà", "http://localhost:8000/static/images/3.png"),
+        ("bac_vuong", "Bác Vương", "", "http://localhost:8000/static/images/4.png"),
+        ("bao_cong1", "Bao Công", "Tuồng Nam Bộ", "http://localhost:8000/static/images/5.png"),
+        ("bao_cong2", "Bao Công", "Tuồng Bao Công Xử Án", "http://localhost:8000/static/images/6.png"),
+        ("bat_vuong", "Bát Vương", "Tuồng Dương Lục Sứ", "http://localhost:8000/static/images/7.png"),
+        ("bat_dong", "Bạt Dõng", "Tuồng Xuân Đào Lóc Thịt", "http://localhost:8000/static/images/8.png"),
+        ("binh_vuong", "Bình Vương", "Tuồng Võ Hùng Vương", "http://localhost:8000/static/images/9.png"),
+        ("cap_to_van", "Cáp Tô Vằn", "Tuồng Đàn Thế Dân Sa Lầy", "http://localhost:8000/static/images/10.png"),
+        ("cat_thuong_hung", "Cát Thượng Hùng", "Tuồng Đào Phi Phụng", "http://localhost:8000/static/images/11.png"),
+        ("chau_thuong", "Châu Thương", "Tuồng Tam Quốc", "http://localhost:8000/static/images/12.png"),
+        ("chau_xuong", "Châu Xương", "", "http://localhost:8000/static/images/13.png"),
+        ("chau_du", "Châu Du", "Tuồng Tam Quốc", "http://localhost:8000/static/images/14.png")
     ]
 
-    # Xóa dữ liệu cũ nếu có để tránh trùng lặp khi chạy lại
+    # Clear old data to avoid duplicates on re-run
     cursor.execute('DELETE FROM masks')
 
-    # Chèn dữ liệu mẫu
+    # Insert all masks
     cursor.executemany('INSERT INTO masks (id, name, category, image_url) VALUES (?, ?, ?, ?)', sample_masks)
-
-    # Tạo thêm các placeholder cho đủ 12 mặt nạ
-    placeholders = []
-    for i in range(len(sample_masks) + 1, 13):
-        mask_id = f"mask_{i}"
-        name = f"Mặt nạ số {i}"
-        category = "Đang cập nhật"
-        image_url = f"http://localhost:8000/static/images/placeholder.png"
-        placeholders.append((mask_id, name, category, image_url))
-    
-    cursor.executemany('INSERT INTO masks (id, name, category, image_url) VALUES (?, ?, ?, ?)', placeholders)
 
     conn.commit()
     conn.close()
-    print(f"Database masks.db initialized with {12} records.")
+    print(f"Database masks.db initialized with {len(sample_masks)} records.")
 
 if __name__ == "__main__":
     init_db()

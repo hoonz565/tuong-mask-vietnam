@@ -39,7 +39,7 @@ export default function GridView({ masks, setSelectedMask, containerVariants, it
               <img 
                 src={mask.image_url} 
                 alt={mask.name}
-                className="w-full h-full object-contain scale-150 filter grayscale group-hover:grayscale-0 transition-all duration-500"
+                className="w-full h-full object-contain scale-150 transition-all duration-500"
                 onError={(e) => { e.target.src = 'http://localhost:8000/static/images/placeholder.png'; }}
               />
               {/* Scanline overlay */}
