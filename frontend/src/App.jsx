@@ -73,6 +73,8 @@ function App() {
       {/* Hero — always visible above the gallery */}
       <Hero />
 
+      
+
       {/* Gallery toolbar — sits between Hero and the mask list */}
       <GalleryToolbar viewMode={viewMode} setViewMode={setViewMode} total={masks.length || null} />
 
