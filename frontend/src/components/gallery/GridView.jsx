@@ -3,15 +3,11 @@ import { motion } from 'framer-motion';
 
 export default function GridView({ masks, setSelectedMask, containerVariants, itemVariants }) {
   return (
-    <motion.main
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
+    <main
       className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-0 w-full"
     >
       {masks.map((mask) => (
-        <motion.button
-          variants={itemVariants}
+        <button
           key={mask.id}
           onClick={() => setSelectedMask(mask)}
           className="group relative flex flex-col items-center bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-secondary cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed"
@@ -50,8 +46,8 @@ export default function GridView({ masks, setSelectedMask, containerVariants, it
               {mask.name}
             </h3>
           </div>
-        </motion.button>
+        </button>
       ))}
-    </motion.main>
+    </main>
   );
 }

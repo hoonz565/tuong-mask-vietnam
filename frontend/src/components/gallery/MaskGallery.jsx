@@ -7,22 +7,6 @@ import GalleryToolbar from '../layout/GalleryToolbar';
 export default function MaskGallery({ masks, loading, error }) {
   const [selectedMask, setSelectedMask] = useState(null);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.05 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    show: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.25, ease: "easeOut" }
-    }
-  };
 
   if (loading) {
     return (
@@ -88,8 +72,6 @@ export default function MaskGallery({ masks, loading, error }) {
             <GridView
               masks={masks}
               setSelectedMask={setSelectedMask}
-              containerVariants={containerVariants}
-              itemVariants={itemVariants}
             />
           </motion.div>
         )}

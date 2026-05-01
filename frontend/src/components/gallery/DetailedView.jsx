@@ -53,12 +53,6 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                   className={`w-full h-full object-contain transition-all duration-300 ${selectedMask.id === mask.id ? 'scale-110' : 'scale-100 group-hover:scale-110'}`}
                   onError={(e) => { e.target.src = 'http://localhost:8000/static/images/placeholder.png'; }}
                 />
-                {selectedMask.id === mask.id && (
-                  <motion.div
-                    layoutId="selection-ring"
-                    className="absolute inset-0 border-2 border-secondary pointer-events-none"
-                  />
-                )}
               </button>
             ))}
           </div>
