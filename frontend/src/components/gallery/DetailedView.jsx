@@ -75,7 +75,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
           className="relative"
         >
           {/* 1. THE CLOSE BUTTON */}
-          <button 
+          <button
             onClick={() => setSelectedMask(null)}
             className="group relative w-10 h-10 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors mb-12"
           >
@@ -88,7 +88,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
           {/* 2. TYPOGRAPHY & HEADER */}
           <div className="mb-8">
             <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.5em] block mb-2">
-             {selectedMask.category}
+              {selectedMask.category}
             </span>
             <h2 className="text-7xl font-bold uppercase tracking-tighter text-secondary mb-6 leading-[0.85]">
               {selectedMask.name}
@@ -124,12 +124,12 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                       {japaneseLabels[statName.toLowerCase()] || "データ"}
                     </span>
                   </div>
-                  
+
                   {/* Segmented Dashes */}
                   <div className="flex gap-1.5 items-center font-mono text-lg leading-none select-none">
                     {[...Array(10)].map((_, i) => (
-                      <span 
-                        key={i} 
+                      <span
+                        key={i}
                         className={`transition-colors duration-500 ${i < activeSegments ? 'text-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' : 'text-white/5'}`}
                       >
                         -
