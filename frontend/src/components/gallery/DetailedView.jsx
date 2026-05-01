@@ -82,7 +82,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.5em] block mb-2">
+              <span className="text-[14px] font-bold text-secondary uppercase tracking-[0.5em] block mb-2">
                 {selectedMask.category}
               </span>
               <h2 className="text-7xl font-bold uppercase tracking-tighter text-secondary mb-6 leading-[0.85]">
@@ -97,44 +97,33 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
           </AnimatePresence>
         </div>
 
+        {/* 3. THE STATS BOARD - REFACTORED PER REQUIREMENTS */}
         <div className="mt-12 pt-12 border-t border-tertiary/10">
-          <div className="grid grid-cols-2 gap-x-12 gap-y-10">
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6">
             {Object.entries(selectedMask.stats || {}).map(([statName, statValue]) => {
               const activeSegments = Math.round(statValue / 10);
-              const japaneseLabels = {
-                strength: "POWER",
-                intellect: "WISDOM",
-                agility: "SPEED",
-                spirit: "SPIRIT",
-                vitality: "VITAL",
-                ferocity: "RAGE",
-                intellect: "INTEL",
-              };
 
               return (
-                <div key={statName} className="flex flex-col gap-3">
-                  <div className="flex justify-between items-end">
+                <div key={statName} className="flex flex-col">
+                  {/* Row 1: Labels */}
+                  <div className="flex justify-between items-end mb-1">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-tertiary/40">
                       {statName}
                     </span>
-                    <span className="text-[10px] font-bold text-secondary">
-                      {japaneseLabels[statName.toLowerCase()] || "データ"}
-                    </span>
                   </div>
 
-                  {/* Segmented Dashes - Static Container, Animating Colors */}
-                  <div className="flex gap-1.5 items-center font-mono text-lg leading-none select-none">
+                  {/* Row 2: Progress Bar (10 Blocks) */}
+                  <div className="flex w-full gap-1">
                     {[...Array(10)].map((_, i) => (
-                      <span
+                      <div
                         key={i}
-                        className={`transition-colors duration-500 ${i < activeSegments ? 'text-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' : 'text-white/5'}`}
-                      >
-                        -
-                      </span>
+                        className={`h-[3px] flex-1 transition-all duration-500 ${
+                          i < activeSegments 
+                            ? 'bg-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' 
+                            : 'bg-white/10'
+                        }`}
+                      />
                     ))}
-                    <span className="ml-2 text-[10px] font-bold text-tertiary/20 tabular-nums">
-                      {statValue}%
-                    </span>
                   </div>
                 </div>
               );
