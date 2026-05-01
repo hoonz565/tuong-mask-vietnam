@@ -1,21 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GridView from './GridView';
-import ListView from './ListView';
 import DetailedView from './DetailedView';
 import GalleryToolbar from '../layout/GalleryToolbar';
 
 export default function MaskGallery({ masks, loading, error }) {
-  const [viewMode, setViewMode] = useState('grid');
   const [selectedMask, setSelectedMask] = useState(null);
-  const [activeMask, setActiveMask] = useState(null);
-
-  // Set initial active mask once masks are loaded
-  React.useEffect(() => {
-    if (masks.length > 0 && !activeMask) {
-      setActiveMask(masks[0]);
-    }
-  }, [masks, activeMask]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -27,8 +17,8 @@ export default function MaskGallery({ masks, loading, error }) {
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    show: { 
-      opacity: 1, 
+    show: {
+      opacity: 1,
       scale: 1,
       transition: { duration: 0.25, ease: "easeOut" }
     }
@@ -65,15 +55,13 @@ export default function MaskGallery({ masks, loading, error }) {
       {/* Gallery toolbar — hidden when a mask is selected for focused view */}
       <AnimatePresence mode="wait">
         {!selectedMask && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="w-full"
           >
             <GalleryToolbar 
-              viewMode={viewMode} 
-              setViewMode={setViewMode} 
               total={masks.length} 
             />
           </motion.div>
@@ -83,36 +71,26 @@ export default function MaskGallery({ masks, loading, error }) {
       {/* Main Content Area */}
       <AnimatePresence mode="wait">
         {selectedMask ? (
-          <DetailedView 
+          <DetailedView
             key="detailed"
-            selectedMask={selectedMask} 
+            selectedMask={selectedMask}
             setSelectedMask={setSelectedMask}
             masks={masks}
           />
         ) : (
-          <motion.div 
+          <motion.div
             key="gallery-list"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="w-full"
           >
-            {viewMode === 'grid' && (
-              <GridView 
-                masks={masks} 
-                setSelectedMask={setSelectedMask}
-                containerVariants={containerVariants}
-                itemVariants={itemVariants}
-              />
-            )}
-            {viewMode === 'list' && (
-              <ListView 
-                masks={masks}
-                activeMask={activeMask}
-                setActiveMask={setActiveMask}
-                setSelectedMask={setSelectedMask}
-              />
-            )}
+            <GridView
+              masks={masks}
+              setSelectedMask={setSelectedMask}
+              containerVariants={containerVariants}
+              itemVariants={itemVariants}
+            />
           </motion.div>
         )}
       </AnimatePresence>

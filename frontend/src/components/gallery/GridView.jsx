@@ -31,7 +31,7 @@ export default function GridView({ masks, setSelectedMask, containerVariants, it
             {/* Bottom Right */}
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:w-1/2 group-hover:h-1/2 group-hover:border-secondary transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" />
 
-            {/* Actual Image - ĐÃ BỎ HIỆU ỨNG ZOOM (SCALE) */}
+            {/* Actual Image*/}
             <div className="relative w-full h-full p-2">
               <img
                 src={mask.image_url}
