@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Scan } from 'lucide-react';
 
 export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
@@ -60,43 +60,46 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
       </div>
 
       {/* PART 3: MASK DETAILS & STATS (Utopia Tokyo Style) */}
-      <div className="w-full lg:w-2/4 flex flex-col pt-4 pl-8">
-        <motion.div
-          key={`info-${selectedMask.id}`}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative"
+      <div className="w-full lg:w-2/4 flex flex-col pt-4 pl-8 relative">
+        {/* 1. THE CLOSE BUTTON - STATIC */}
+        <button
+          onClick={() => setSelectedMask(null)}
+          className="group relative w-10 h-10 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors mb-12"
         >
-          {/* 1. THE CLOSE BUTTON */}
-          <button
-            onClick={() => setSelectedMask(null)}
-            className="group relative w-10 h-10 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors mb-12"
-          >
-            {/* Viewfinder Corners */}
-            <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <X size={18} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-          </button>
+          {/* Viewfinder Corners */}
+          <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+          <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+          <X size={18} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+        </button>
 
-          {/* 2. TYPOGRAPHY & HEADER */}
-          <div className="mb-8">
-            <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.5em] block mb-2">
-              {selectedMask.category}
-            </span>
-            <h2 className="text-7xl font-bold uppercase tracking-tighter text-secondary mb-6 leading-[0.85]">
-              {selectedMask.name}
-            </h2>
-            <div className="max-w-xl">
-              <p className="text-sm text-tertiary/80 leading-relaxed font-sans">
-                {selectedMask.description}
-              </p>
-            </div>
-          </div>
+        {/* 2. TYPOGRAPHY & HEADER - ANIMATED TEXT ONLY */}
+        <div className="mb-8 min-h-[180px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`header-${selectedMask.id}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.5em] block mb-2">
+                {selectedMask.category}
+              </span>
+              <h2 className="text-7xl font-bold uppercase tracking-tighter text-secondary mb-6 leading-[0.85]">
+                {selectedMask.name}
+              </h2>
+              <div className="max-w-xl">
+                <p className="text-sm text-tertiary/80 leading-relaxed font-sans">
+                  {selectedMask.description}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-          {/* 3. THE STATS BOARD (Segmented Dashes) */}
-          <div className="grid grid-cols-2 gap-x-12 gap-y-10 mt-12 pt-12 border-t border-tertiary/10">
-            {Object.entries(selectedMask.stats).map(([statName, statValue]) => {
+        <div className="mt-12 pt-12 border-t border-tertiary/10">
+          <div className="grid grid-cols-2 gap-x-12 gap-y-10">
+            {Object.entries(selectedMask.stats || {}).map(([statName, statValue]) => {
               const activeSegments = Math.round(statValue / 10);
               const japaneseLabels = {
                 strength: "POWER",
@@ -119,7 +122,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                     </span>
                   </div>
 
-                  {/* Segmented Dashes */}
+                  {/* Segmented Dashes - Static Container, Animating Colors */}
                   <div className="flex gap-1.5 items-center font-mono text-lg leading-none select-none">
                     {[...Array(10)].map((_, i) => (
                       <span
@@ -137,9 +140,10 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
               );
             })}
           </div>
+        </div>
 
-          {/* Registry Footer */}
-          <div className="mt-16 pt-8 border-t border-tertiary/5 flex justify-between items-end">
+        <div className="mt-16 pt-8 border-t border-tertiary/5">
+          <div className="flex justify-between items-end">
             <div className="text-[9px] font-mono text-tertiary/20 uppercase tracking-widest leading-relaxed">
               ID_REGISTRY: {selectedMask.id.toString().padStart(8, '0')} <br />
               TIMESTAMP: {new Date().toISOString().replace('T', '_').split('.')[0]} <br />
@@ -149,7 +153,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
               UTOPIA_SYSTEM_V.4.0
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
