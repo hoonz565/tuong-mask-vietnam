@@ -13,7 +13,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
       className="w-full flex flex-col lg:flex-row gap-4 min-h-[70vh] items-start"
     >
       {/* PART 1: SELECTED MASK IMAGE (Large) */}
-      <div className="w-full lg:w-1/5 flex flex-col items-center justify-start sticky top-24">
+      <div className="w-full lg:w-1/4 flex flex-col items-center justify-start sticky top-24">
         <div className="relative w-full aspect-[3/4] bg-inverse/50 border border-secondary/20 flex items-center justify-center p-8 overflow-hidden">
              {/* ANIMATED CORNER MARKERS */}
             <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-secondary/50" />
@@ -39,10 +39,10 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
       </div>
 
       {/* PART 2: MASK SELECTION LIST (Mini Grid) */}
-      <div className="w-full lg:w-3/5 border-r border-tertiary/5 pr-8 pl-0">
+      <div className="w-full lg:w-1/4 border-x border-tertiary/5 px-4">
         <div className="flex flex-col mb-4">
            <h3 className="text-[10px] font-bold text-tertiary/30 uppercase tracking-[0.3em] mb-4">Archive_Selection</h3>
-           <div className="grid grid-cols-8 sm:grid-cols-12 md:grid-cols-15 lg:grid-cols-18 xl:grid-cols-18 gap-0 max-h-[65vh] overflow-y-auto pr-4 custom-scrollbar pb-12">
+           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-7 xl:grid-cols-7 gap-0 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar pb-12">
             {masks.map((mask) => (
               <button
                 key={mask.id}
@@ -74,7 +74,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
       </div>
 
       {/* PART 3: MASK DETAILS & STATS */}
-      <div className="w-full lg:w-1/5 flex flex-col pt-4">
+      <div className="w-full lg:w-2/4 flex flex-col pt-4 pl-4">
         <motion.div
           key={`info-${selectedMask.id}`}
           initial={{ opacity: 0, x: 20 }}
