@@ -121,34 +121,54 @@ function RadarChart({ stats }) {
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[500px] max-h-[500px]">
-      {/* Grid diamonds */}
+
+      {/* ── LAYER 1: Background Web Grid ─────────────── */}
+
+      {/* Crosshair axes — full length */}
+      <line x1={cx} y1={cy - maxR - 10} x2={cx} y2={cy + maxR + 10} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+      <line x1={cx - maxR - 10} y1={cy} x2={cx + maxR + 10} y2={cy} stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+
+      {/* Concentric diamond rings */}
       {rings.map((r) => (
-        <polygon key={r} points={`${cx},${cy - maxR * r} ${cx + maxR * r},${cy} ${cx},${cy + maxR * r} ${cx - maxR * r},${cy}`}
-          fill="none" stroke="rgba(255,25,25,0.08)" strokeWidth="0.5" />
+        <polygon key={r}
+          points={`${cx},${cy - maxR * r} ${cx + maxR * r},${cy} ${cx},${cy + maxR * r} ${cx - maxR * r},${cy}`}
+          fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
       ))}
-      {/* Axes */}
-      <line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke="rgba(255,25,25,0.06)" strokeWidth="0.5" />
-      <line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke="rgba(255,25,25,0.06)" strokeWidth="0.5" />
-      {/* Crosshair ticks */}
-      {[0.25, 0.5, 0.75].map((r) => (
+
+      {/* Crosshair tick marks at each ring intersection */}
+      {rings.map((r) => (
         <g key={`tick-${r}`}>
-          <line x1={cx - 3} y1={cy - maxR * r} x2={cx + 3} y2={cy - maxR * r} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
-          <line x1={cx - 3} y1={cy + maxR * r} x2={cx + 3} y2={cy + maxR * r} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
-          <line x1={cx - maxR * r} y1={cy - 3} x2={cx - maxR * r} y2={cy + 3} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
-          <line x1={cx + maxR * r} y1={cy - 3} x2={cx + maxR * r} y2={cy + 3} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
+          <line x1={cx - 4} y1={cy - maxR * r} x2={cx + 4} y2={cy - maxR * r} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <line x1={cx - 4} y1={cy + maxR * r} x2={cx + 4} y2={cy + maxR * r} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <line x1={cx - maxR * r} y1={cy - 4} x2={cx - maxR * r} y2={cy + 4} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <line x1={cx + maxR * r} y1={cy - 4} x2={cx + maxR * r} y2={cy + 4} stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
         </g>
       ))}
-      {/* Data polygon */}
+
+      {/* Anchor squares at outermost vertices */}
+      <rect x={cx - 2} y={cy - maxR - 2} width="4" height="4" fill="rgba(255,255,255,0.5)" />
+      <rect x={cx + maxR - 2} y={cy - 2} width="4" height="4" fill="rgba(255,255,255,0.5)" />
+      <rect x={cx - 2} y={cy + maxR - 2} width="4" height="4" fill="rgba(255,255,255,0.5)" />
+      <rect x={cx - maxR - 2} y={cy - 2} width="4" height="4" fill="rgba(255,255,255,0.5)" />
+
+      {/* Center dot */}
+      <circle cx={cx} cy={cy} r="2" fill="rgba(255,255,255,0.2)" />
+
+      {/* ── LAYER 2: Active Data Polygon ─────────────── */}
+
       <motion.polygon points={polyStr} fill="rgba(255,25,25,0.12)" stroke="#ff1919" strokeWidth="1.5"
         initial={false} animate={{ points: polyStr }} transition={{ type: 'spring', stiffness: 200, damping: 25 }}
         style={{ filter: 'drop-shadow(0 0 6px rgba(255,25,25,0.4))' }} />
+
       {/* Vertex dots */}
       {pts.map((p, i) => (
         <motion.circle key={i} r="3.5" fill="#ff1919" animate={{ cx: p.x, cy: p.y }}
           transition={{ type: 'spring', stiffness: 200, damping: 25 }}
           style={{ filter: 'drop-shadow(0 0 5px rgba(255,25,25,0.8))' }} />
       ))}
-      {/* Vertex labels — English only */}
+
+      {/* ── LAYER 3: Vertex Labels ───────────────────── */}
+
       <text x={cx} y={14} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">STRENGTH</tspan></text>
       <text x={size - 8} y={cy + 5} textAnchor="end"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
       <text x={cx} y={size - 8} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">FEROCITY</tspan></text>
