@@ -16,13 +16,13 @@ const usedPoints = (s) => STAT_KEYS.reduce((sum, k) => sum + s[k], 0);
 function BracketBox({ children, label, labelAlign = 'left', valueColor = 'text-tertiary', className = '' }) {
   const isLeft = labelAlign === 'left';
   return (
-    <div className={`relative border border-white/10 p-4 mt-4 ${className}`}>
+    <div className={`relative border border-white/10 p-6 mt-6 ${className}`}>
       {/* Corner brackets */}
-      <div className={`absolute top-0 ${isLeft ? 'left-0' : 'right-0'} w-3 h-3 ${isLeft ? 'border-t border-l' : 'border-t border-r'} border-tertiary/60`} />
-      <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l border-tertiary/60`} />
-      <div className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r border-tertiary/60`} />
+      <div className={`absolute top-0 ${isLeft ? 'left-0' : 'right-0'} w-4 h-4 ${isLeft ? 'border-t border-l' : 'border-t border-r'} border-tertiary/60`} />
+      <div className={`absolute bottom-0 left-0 w-4 h-4 border-b border-l border-tertiary/60`} />
+      <div className={`absolute bottom-0 right-0 w-4 h-4 border-b border-r border-tertiary/60`} />
       {/* Label */}
-      <span className={`absolute -top-2 ${isLeft ? 'left-3' : 'right-3'} bg-surface px-1 text-[8px] font-bold uppercase tracking-[0.3em] text-tertiary/50`}>
+      <span className={`absolute -top-2.5 ${isLeft ? 'left-4' : 'right-4'} bg-surface px-2 text-sm font-bold uppercase tracking-[0.3em] text-tertiary/50`}>
         {label}
       </span>
       {children}
@@ -52,10 +52,10 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
   const onUp = () => { dragging.current = false; };
 
   return (
-    <div className="flex flex-col items-center select-none w-16">
+    <div className="flex flex-col items-center select-none w-20">
       {/* Value box */}
-      <div className="w-14 h-14 bg-inverse border border-white/15 flex items-center justify-center mb-3">
-        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-lg font-bold font-mono text-tertiary tabular-nums">
+      <div className="w-16 h-16 bg-inverse border border-white/15 flex items-center justify-center mb-3">
+        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-2xl font-bold font-mono text-tertiary tabular-nums">
           {value}
         </motion.span>
       </div>
@@ -66,7 +66,7 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        className="relative w-8 h-72 cursor-pointer touch-none flex flex-col justify-between items-center py-1"
+        className="relative w-10 h-[450px] cursor-pointer touch-none flex flex-col justify-between items-center py-1"
       >
         {/* Ticks */}
         {[...Array(TICK_COUNT + 1)].map((_, i) => {
@@ -74,7 +74,7 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
           const isMajor = i % 5 === 0;
           const isActive = (100 - tickPct) <= pct;
           return (
-            <div key={i} className={`${isMajor ? 'w-5' : 'w-3'} h-px ${isActive ? 'bg-secondary shadow-[0_0_4px_rgba(255,25,25,0.5)]' : 'bg-white/15'} transition-colors duration-200`} />
+            <div key={i} className={`${isMajor ? 'w-7' : 'w-4'} h-px ${isActive ? 'bg-secondary shadow-[0_0_4px_rgba(255,25,25,0.5)]' : 'bg-white/15'} transition-colors duration-200`} />
           );
         })}
 
@@ -93,8 +93,8 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
       </div>
 
       {/* Rotated label */}
-      <div className="mt-3 flex flex-col items-center">
-        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-tertiary/40 [writing-mode:vertical-lr]">{label}</span>
+      <div className="mt-4 flex flex-col items-center">
+        <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-tertiary/40 [writing-mode:vertical-lr]">{label}</span>
       </div>
     </div>
   );
@@ -104,10 +104,10 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
    SVG RADAR CHART — large targeting-system diamond
    ═══════════════════════════════════════════════════════════════════ */
 function RadarChart({ stats }) {
-  const size = 400;
+  const size = 500;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = 170;
+  const maxR = 210;
   const norm = (v) => ((v - MIN_STAT) / (MAX_STAT - MIN_STAT)) * maxR;
   const rings = [0.25, 0.5, 0.75, 1];
 
@@ -120,7 +120,7 @@ function RadarChart({ stats }) {
   const polyStr = pts.map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[400px] max-h-[400px]">
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[500px] max-h-[500px]">
       {/* Grid diamonds */}
       {rings.map((r) => (
         <polygon key={r} points={`${cx},${cy - maxR * r} ${cx + maxR * r},${cy} ${cx},${cy + maxR * r} ${cx - maxR * r},${cy}`}
@@ -149,10 +149,10 @@ function RadarChart({ stats }) {
           style={{ filter: 'drop-shadow(0 0 5px rgba(255,25,25,0.8))' }} />
       ))}
       {/* Vertex labels — English only */}
-      <text x={cx} y={12} textAnchor="middle"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">STRENGTH</tspan></text>
-      <text x={size - 6} y={cy + 4} textAnchor="end"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
-      <text x={cx} y={size - 6} textAnchor="middle"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">FEROCITY</tspan></text>
-      <text x={6} y={cy + 4} textAnchor="start"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">SPIRIT</tspan></text>
+      <text x={cx} y={14} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">STRENGTH</tspan></text>
+      <text x={size - 8} y={cy + 5} textAnchor="end"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
+      <text x={cx} y={size - 8} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">FEROCITY</tspan></text>
+      <text x={8} y={cy + 5} textAnchor="start"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">SPIRIT</tspan></text>
     </svg>
   );
 }
@@ -191,24 +191,24 @@ function AdjustStage({ onExecute }) {
   return (
     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.4 }}
-      className="w-full mx-auto grid grid-cols-[1fr_2fr_1fr] gap-8 items-start px-4"
+      className="w-full min-h-[85vh] flex justify-between items-start px-8 md:px-16 lg:px-24 py-8"
       style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='20' y='22' text-anchor='middle' font-size='8' fill='%23ff1919' opacity='0.08'%3E+%3C/text%3E%3C/svg%3E\")", backgroundSize: '40px 40px' }}
     >
       {/* ── LEFT PANEL ───────────────────────── */}
       <div className="flex flex-col items-center">
-        <div className="flex gap-6 justify-center">
+        <div className="flex gap-16 justify-center">
           <HudSlider label="Strength" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
           <HudSlider label="Intellect" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
         </div>
-        <BracketBox label="LEVEL" labelAlign="left" className="w-full max-w-[120px]">
+        <BracketBox label="LEVEL" labelAlign="left" className="w-full min-w-[200px] !p-6">
           <div className="text-center">
-            <span className="text-3xl font-bold font-mono text-tertiary">{spent}</span>
+            <span className="text-8xl font-bold font-mono text-tertiary leading-none">{spent}</span>
           </div>
         </BracketBox>
       </div>
 
       {/* ── CENTER CONSOLE ────────────────────── */}
-      <div className="relative flex flex-col items-center">
+      <div className="relative flex flex-col items-center flex-1">
         {/* Large corner brackets around center */}
         <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-tertiary/20" />
         <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-tertiary/20" />
@@ -221,13 +221,13 @@ function AdjustStage({ onExecute }) {
           {/* Action bar */}
           <div className="flex items-center justify-between w-full mt-6 gap-4">
             <button onClick={randomize}
-              className="text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-3 py-2">
+              className="text-sm font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-4 py-3">
               Random Selection
             </button>
             <motion.button onClick={() => onExecute(stats)}
               animate={{ boxShadow: ['0 0 8px rgba(255,25,25,0.2)', '0 0 18px rgba(255,25,25,0.4)', '0 0 8px rgba(255,25,25,0.2)'] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="px-5 py-2 bg-surface border border-secondary/40 text-[10px] font-mono font-bold text-secondary uppercase tracking-[0.15em] hover:border-secondary hover:bg-secondary/5 transition-colors cursor-pointer">
+              className="px-10 py-4 bg-surface border border-secondary/40 text-sm font-mono font-bold text-secondary uppercase tracking-[0.2em] hover:border-secondary hover:bg-secondary/5 transition-colors cursor-pointer">
               &gt;_DISCOVER_YOUR_INNER_MASK
             </motion.button>
           </div>
@@ -236,14 +236,14 @@ function AdjustStage({ onExecute }) {
 
       {/* ── RIGHT PANEL ──────────────────────── */}
       <div className="flex flex-col items-center">
-        <div className="flex gap-6 justify-center">
+        <div className="flex gap-16 justify-center">
           <HudSlider label="Spirit" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
           <HudSlider label="Ferocity" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
         </div>
-        <BracketBox label="SKILL POINTS" labelAlign="right" className="w-full max-w-[120px]">
+        <BracketBox label="SKILL POINTS" labelAlign="right" className="w-full min-w-[200px] !p-6">
           <div className="text-center">
             <motion.span key={remaining} initial={{ scale: 1.2 }} animate={{ scale: 1 }}
-              className={`text-3xl font-bold font-mono ${remaining === 0 ? 'text-secondary' : 'text-secondary/80'}`}>
+              className={`text-8xl font-bold font-mono leading-none ${remaining === 0 ? 'text-secondary' : 'text-secondary/80'}`}>
               {remaining}
             </motion.span>
           </div>
