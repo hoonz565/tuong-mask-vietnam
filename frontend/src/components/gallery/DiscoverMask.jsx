@@ -16,7 +16,7 @@ const usedPoints = (s) => STAT_KEYS.reduce((sum, k) => sum + s[k], 0);
 function BracketBox({ children, label, labelAlign = 'left', valueColor = 'text-tertiary', className = '' }) {
   const isLeft = labelAlign === 'left';
   return (
-    <div className={`relative border border-white/10 p-6 mt-6 ${className}`}>
+    <div className={`relative border border-tertiary/20 p-6 mt-6 ${className}`}>
       {/* Corner brackets */}
       <div className={`absolute top-0 ${isLeft ? 'left-0' : 'right-0'} w-4 h-4 ${isLeft ? 'border-t border-l' : 'border-t border-r'} border-tertiary/60`} />
       <div className={`absolute bottom-0 left-0 w-4 h-4 border-b border-l border-tertiary/60`} />
@@ -52,10 +52,10 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
   const onUp = () => { dragging.current = false; };
 
   return (
-    <div className="flex flex-col items-center select-none w-20">
-      {/* Value box */}
-      <div className="w-16 h-16 bg-inverse border border-white/15 flex items-center justify-center mb-3">
-        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-2xl font-bold font-mono text-tertiary tabular-nums">
+    <div className="flex flex-col items-center select-none border border-tertiary/20 p-3 bg-white/[0.01]">
+      {/* Value box — square */}
+      <div className="w-20 h-20 bg-[#1a1a1a] border border-tertiary/25 flex items-center justify-center mb-4">
+        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-5xl font-black font-mono text-tertiary tabular-nums">
           {value}
         </motion.span>
       </div>
@@ -74,7 +74,7 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
           const isMajor = i % 5 === 0;
           const isActive = (100 - tickPct) <= pct;
           return (
-            <div key={i} className={`${isMajor ? 'w-7' : 'w-4'} h-px ${isActive ? 'bg-secondary shadow-[0_0_4px_rgba(255,25,25,0.5)]' : 'bg-white/15'} transition-colors duration-200`} />
+            <div key={i} className={`${isMajor ? 'w-8' : 'w-4'} h-px ${isActive ? 'bg-secondary shadow-[0_0_4px_rgba(255,25,25,0.5)]' : 'bg-white/15'} transition-colors duration-200`} />
           );
         })}
 
@@ -85,15 +85,15 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <div className="flex items-center gap-0">
-            <span className="text-secondary text-[10px] font-mono font-bold">[</span>
-            <div className="w-3 h-[2px] bg-secondary shadow-[0_0_6px_rgba(255,25,25,0.7)]" />
-            <span className="text-secondary text-[10px] font-mono font-bold">]</span>
+            <span className="text-secondary text-xs font-mono font-bold">[</span>
+            <div className="w-4 h-[2px] bg-secondary shadow-[0_0_6px_rgba(255,25,25,0.7)]" />
+            <span className="text-secondary text-xs font-mono font-bold">]</span>
           </div>
         </motion.div>
       </div>
 
       {/* Rotated label */}
-      <div className="mt-4 flex flex-col items-center">
+      <div className="mt-4 mb-4 flex flex-col items-center">
         <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-tertiary/40 [writing-mode:vertical-lr]">{label}</span>
       </div>
     </div>
@@ -196,7 +196,7 @@ function AdjustStage({ onExecute }) {
     >
       {/* ── LEFT PANEL ───────────────────────── */}
       <div className="flex flex-col items-center">
-        <div className="flex gap-16 justify-center">
+        <div className="flex gap-4 justify-center">
           <HudSlider label="Strength" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
           <HudSlider label="Intellect" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
         </div>
@@ -236,7 +236,7 @@ function AdjustStage({ onExecute }) {
 
       {/* ── RIGHT PANEL ──────────────────────── */}
       <div className="flex flex-col items-center">
-        <div className="flex gap-16 justify-center">
+        <div className="flex gap-4 justify-center">
           <HudSlider label="Spirit" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
           <HudSlider label="Ferocity" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
         </div>
