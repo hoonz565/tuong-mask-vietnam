@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import random
 
 def init_db():
     db_path = 'masks.db'
@@ -14,7 +15,11 @@ def init_db():
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         category TEXT,
-        image_url TEXT
+        image_url TEXT,
+        strength INTEGER,
+        intellect INTEGER,
+        spirit INTEGER,
+        ferocity INTEGER
     )
     ''')
 
@@ -142,12 +147,30 @@ def init_db():
     # Clear old data to avoid duplicates on re-run
     cursor.execute('DELETE FROM masks')
 
-    # Insert all masks
-    cursor.executemany('INSERT INTO masks (id, name, category, image_url) VALUES (?, ?, ?, ?)', sample_masks)
+    # Làm sạch URL và gán điểm số ngẫu nhiên
+    cleaned_masks = []
+    for mask in sample_masks:
+        mask_id, name, category, url = mask
+        # Loại bỏ phần localhost
+        clean_url = url.replace("http://localhost:8000", "")
+        
+        # Gán điểm ngẫu nhiên cho 4 chỉ số (từ 10 đến 100)
+        str_pts = random.randint(10, 100)
+        int_pts = random.randint(10, 100)
+        spi_pts = random.randint(10, 100)
+        fer_pts = random.randint(10, 100)
+        
+        cleaned_masks.append((mask_id, name, category, clean_url, str_pts, int_pts, spi_pts, fer_pts))
+
+    # Insert all masks với cấu trúc mới
+    cursor.executemany('''
+        INSERT INTO masks (id, name, category, image_url, strength, intellect, spirit, ferocity) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', cleaned_masks)
 
     conn.commit()
     conn.close()
-    print(f"Database masks.db initialized with {len(sample_masks)} records.")
+    print(f"Database masks.db initialized with {len(cleaned_masks)} records. URLs are relative and stats are generated!")
 
 if __name__ == "__main__":
     init_db()
