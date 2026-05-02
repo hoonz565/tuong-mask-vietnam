@@ -4,6 +4,7 @@ import BackgroundText from './components/layout/BackgroundText';
 import Header from './components/layout/Header';
 import Hero from './components/layout/Hero';
 import MaskGallery from './components/gallery/MaskGallery';
+import GalleryFooter from './components/layout/GalleryFooter';
 
 function App() {
   const [masks, setMasks] = useState([]);
@@ -47,10 +48,8 @@ function App() {
       {/* Main Mask Gallery */}
       <MaskGallery masks={masks} loading={loading} error={error} />
       
-      {/* Footer / Decorative Spacer */}
-      <div className="h-24 w-full border-t border-tertiary/5 mt-12 bg-surface flex items-center justify-center">
-        <span className="text-[10px] uppercase tracking-[0.5em] text-tertiary/20">VIETNAM_TUONG_COLLECTION // 2026</span>
-      </div>
+      {/* Footer */}
+      <GalleryFooter masks={masks} />
     </div>
   );
 }
