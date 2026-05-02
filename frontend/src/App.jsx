@@ -17,16 +17,14 @@ function App() {
         return res.json();
       })
       .then(data => {
-        // Augment data with mock description and stats
+        const API_BASE = 'http://localhost:8000';
+        // Augment data: fix relative image URLs + add fallback description
         const augmentedData = data.map((item) => ({
           ...item,
-          description: `A legendary artifact from the Tuong heritage. Classified under ${item.category || 'Unknown'}, this mask carries the spirit of ancient performances. Its origins date back centuries, symbolizing distinct virtues on the stage.`,
-          stats: {
-            strength: Math.floor(Math.random() * 60) + 40,
-            intellect: Math.floor(Math.random() * 60) + 40,
-            spirit: Math.floor(Math.random() * 60) + 40,
-            ferocity: Math.floor(Math.random() * 60) + 40,
-          }
+          image_url: item.image_url && !item.image_url.startsWith('http')
+            ? `${API_BASE}${item.image_url}`
+            : item.image_url,
+          description: item.description || `A legendary artifact from the Tuong heritage. Classified under ${item.category || 'Unknown'}, this mask carries the spirit of ancient performances. Its origins date back centuries, symbolizing distinct virtues on the stage.`,
         }));
         setMasks(augmentedData);
         setLoading(false);
