@@ -169,7 +169,12 @@ export default function Hero() {
           ))}
 
           {/* VÙNG CHỨA MẶT NẠ (Giúp định vị mắt dễ hơn) */}
-          <div className="relative w-[85%] max-w-2xl flex justify-center items-center">
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1.25 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="relative w-[85%] max-w-2xl flex justify-center items-center"
+          >
             
             {/* Left Pupil */}
             <motion.div
@@ -207,7 +212,7 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: 'easeOut' }}
               style={{ filter: 'drop-shadow(0 0 40px rgba(255, 25, 25, 0.2))' }}
             />
-          </div>
+          </motion.div>
 
         </motion.div>
         
