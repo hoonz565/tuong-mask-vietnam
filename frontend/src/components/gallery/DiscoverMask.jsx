@@ -6,16 +6,37 @@ const TOTAL_POINTS = 200;
 const MIN_STAT = 10;
 const MAX_STAT = 100;
 const STAT_KEYS = ['strength', 'intellect', 'spirit', 'ferocity'];
-const STAT_LABELS = { strength: 'STR', intellect: 'INT', spirit: 'SPI', ferocity: 'FER' };
 
 const defaultStats = () => ({ strength: 10, intellect: 10, spirit: 10, ferocity: 10 });
 const usedPoints = (s) => STAT_KEYS.reduce((sum, k) => sum + s[k], 0);
 
-// ─── VERTICAL SLIDER ─────────────────────────────────────────────
-function VerticalSlider({ label, shortLabel, value, onChange, maxAllowed }) {
+/* ═══════════════════════════════════════════════════════════════════
+   CORNER BRACKET BOX — reusable container with L-shaped corners
+   ═══════════════════════════════════════════════════════════════════ */
+function BracketBox({ children, label, labelAlign = 'left', valueColor = 'text-tertiary', className = '' }) {
+  const isLeft = labelAlign === 'left';
+  return (
+    <div className={`relative border border-white/10 p-4 mt-4 ${className}`}>
+      {/* Corner brackets */}
+      <div className={`absolute top-0 ${isLeft ? 'left-0' : 'right-0'} w-3 h-3 ${isLeft ? 'border-t border-l' : 'border-t border-r'} border-tertiary/60`} />
+      <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l border-tertiary/60`} />
+      <div className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r border-tertiary/60`} />
+      {/* Label */}
+      <span className={`absolute -top-2 ${isLeft ? 'left-3' : 'right-3'} bg-surface px-1 text-[8px] font-bold uppercase tracking-[0.3em] text-tertiary/50`}>
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HUD VERTICAL SLIDER — ruler tick track + bracket thumb
+   ═══════════════════════════════════════════════════════════════════ */
+function HudSlider({ label, value, onChange, maxAllowed }) {
   const trackRef = useRef(null);
   const dragging = useRef(false);
-
+  const TICK_COUNT = 20;
   const pct = ((value - MIN_STAT) / (MAX_STAT - MIN_STAT)) * 100;
 
   const handlePointer = useCallback((e) => {
@@ -23,244 +44,230 @@ function VerticalSlider({ label, shortLabel, value, onChange, maxAllowed }) {
     const rect = trackRef.current.getBoundingClientRect();
     const y = Math.max(0, Math.min(1, (rect.bottom - e.clientY) / rect.height));
     const raw = Math.round(MIN_STAT + y * (MAX_STAT - MIN_STAT));
-    const clamped = Math.min(raw, maxAllowed);
-    onChange(Math.max(MIN_STAT, clamped));
+    onChange(Math.max(MIN_STAT, Math.min(raw, maxAllowed)));
   }, [maxAllowed, onChange]);
 
-  const onPointerDown = (e) => {
-    dragging.current = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    handlePointer(e);
-  };
-  const onPointerMove = (e) => { if (dragging.current) handlePointer(e); };
-  const onPointerUp = () => { dragging.current = false; };
+  const onDown = (e) => { dragging.current = true; e.currentTarget.setPointerCapture(e.pointerId); handlePointer(e); };
+  const onMove = (e) => { if (dragging.current) handlePointer(e); };
+  const onUp = () => { dragging.current = false; };
 
   return (
-    <div className="flex flex-col items-center gap-2 select-none">
-      {/* Value display */}
-      <motion.span
-        key={value}
-        initial={{ scale: 1.3, color: '#ff1919' }}
-        animate={{ scale: 1, color: '#ebe5ce' }}
-        className="text-2xl font-bold font-mono tabular-nums"
-      >
-        {value}
-      </motion.span>
-
-      {/* Track */}
-      <div
-        ref={trackRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        className="relative w-3 h-52 bg-white/5 border border-white/10 cursor-pointer touch-none"
-        style={{ borderRadius: 2 }}
-      >
-        {/* Fill */}
-        <motion.div
-          className="absolute bottom-0 left-0 w-full bg-secondary/80"
-          animate={{ height: `${pct}%` }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          style={{ borderRadius: 1, boxShadow: '0 0 12px rgba(255,25,25,0.5)' }}
-        />
-        {/* Thumb */}
-        <motion.div
-          className="absolute left-1/2 -translate-x-1/2 w-5 h-2 bg-secondary border border-white/30"
-          animate={{ bottom: `calc(${pct}% - 4px)` }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          style={{ borderRadius: 1, boxShadow: '0 0 8px rgba(255,25,25,0.6)' }}
-        />
+    <div className="flex flex-col items-center select-none w-16">
+      {/* Value box */}
+      <div className="w-14 h-14 bg-inverse border border-white/15 flex items-center justify-center mb-3">
+        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-lg font-bold font-mono text-tertiary tabular-nums">
+          {value}
+        </motion.span>
       </div>
 
-      {/* Label */}
-      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-tertiary/50">
-        {shortLabel}
-      </span>
+      {/* Tick track */}
+      <div
+        ref={trackRef}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        className="relative w-8 h-72 cursor-pointer touch-none flex flex-col justify-between items-center py-1"
+      >
+        {/* Ticks */}
+        {[...Array(TICK_COUNT + 1)].map((_, i) => {
+          const tickPct = (i / TICK_COUNT) * 100;
+          const isMajor = i % 5 === 0;
+          const isActive = (100 - tickPct) <= pct;
+          return (
+            <div key={i} className={`${isMajor ? 'w-5' : 'w-3'} h-px ${isActive ? 'bg-secondary shadow-[0_0_4px_rgba(255,25,25,0.5)]' : 'bg-white/15'} transition-colors duration-200`} />
+          );
+        })}
+
+        {/* Bracket thumb */}
+        <motion.div
+          className="absolute left-1/2 -translate-x-1/2 flex items-center pointer-events-none"
+          animate={{ bottom: `calc(${pct}% - 6px)` }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        >
+          <div className="flex items-center gap-0">
+            <span className="text-secondary text-[10px] font-mono font-bold">[</span>
+            <div className="w-3 h-[2px] bg-secondary shadow-[0_0_6px_rgba(255,25,25,0.7)]" />
+            <span className="text-secondary text-[10px] font-mono font-bold">]</span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Rotated label */}
+      <div className="mt-3 flex flex-col items-center">
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-tertiary/40 [writing-mode:vertical-lr]">{label}</span>
+      </div>
     </div>
   );
 }
 
-// ─── SVG RADAR CHART ──────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   SVG RADAR CHART — large targeting-system diamond
+   ═══════════════════════════════════════════════════════════════════ */
 function RadarChart({ stats }) {
-  const size = 200;
+  const size = 400;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = 80;
-
+  const maxR = 170;
   const norm = (v) => ((v - MIN_STAT) / (MAX_STAT - MIN_STAT)) * maxR;
+  const rings = [0.25, 0.5, 0.75, 1];
 
-  // top, right, bottom, left => strength, intellect, ferocity, spirit
-  const points = [
+  const pts = [
     { x: cx, y: cy - norm(stats.strength) },
     { x: cx + norm(stats.intellect), y: cy },
     { x: cx, y: cy + norm(stats.ferocity) },
     { x: cx - norm(stats.spirit), y: cy },
   ];
-
-  const polyStr = points.map((p) => `${p.x},${p.y}`).join(' ');
-
-  // Grid rings
-  const rings = [0.25, 0.5, 0.75, 1];
+  const polyStr = pts.map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-44 h-44 md:w-56 md:h-56">
-      {/* Grid */}
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full max-w-[400px] max-h-[400px]">
+      {/* Grid diamonds */}
       {rings.map((r) => (
-        <polygon
-          key={r}
-          points={`${cx},${cy - maxR * r} ${cx + maxR * r},${cy} ${cx},${cy + maxR * r} ${cx - maxR * r},${cy}`}
-          fill="none"
-          stroke="rgba(255,25,25,0.12)"
-          strokeWidth="0.5"
-        />
+        <polygon key={r} points={`${cx},${cy - maxR * r} ${cx + maxR * r},${cy} ${cx},${cy + maxR * r} ${cx - maxR * r},${cy}`}
+          fill="none" stroke="rgba(255,25,25,0.08)" strokeWidth="0.5" />
       ))}
       {/* Axes */}
-      <line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke="rgba(255,25,25,0.1)" strokeWidth="0.5" />
-      <line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke="rgba(255,25,25,0.1)" strokeWidth="0.5" />
-
-      {/* Data polygon */}
-      <motion.polygon
-        points={polyStr}
-        fill="rgba(255,25,25,0.15)"
-        stroke="#ff1919"
-        strokeWidth="1.5"
-        initial={false}
-        animate={{ points: polyStr }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-      />
-
-      {/* Dots */}
-      {points.map((p, i) => (
-        <motion.circle
-          key={i}
-          r="3"
-          fill="#ff1919"
-          animate={{ cx: p.x, cy: p.y }}
-          transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-          style={{ filter: 'drop-shadow(0 0 4px rgba(255,25,25,0.8))' }}
-        />
+      <line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke="rgba(255,25,25,0.06)" strokeWidth="0.5" />
+      <line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke="rgba(255,25,25,0.06)" strokeWidth="0.5" />
+      {/* Crosshair ticks */}
+      {[0.25, 0.5, 0.75].map((r) => (
+        <g key={`tick-${r}`}>
+          <line x1={cx - 3} y1={cy - maxR * r} x2={cx + 3} y2={cy - maxR * r} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
+          <line x1={cx - 3} y1={cy + maxR * r} x2={cx + 3} y2={cy + maxR * r} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
+          <line x1={cx - maxR * r} y1={cy - 3} x2={cx - maxR * r} y2={cy + 3} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
+          <line x1={cx + maxR * r} y1={cy - 3} x2={cx + maxR * r} y2={cy + 3} stroke="rgba(255,25,25,0.15)" strokeWidth="0.5" />
+        </g>
       ))}
-
-      {/* Labels */}
-      <text x={cx} y={12} textAnchor="middle" className="fill-tertiary/50 text-[8px] font-bold uppercase">STR</text>
-      <text x={size - 6} y={cy + 3} textAnchor="end" className="fill-tertiary/50 text-[8px] font-bold uppercase">INT</text>
-      <text x={cx} y={size - 4} textAnchor="middle" className="fill-tertiary/50 text-[8px] font-bold uppercase">FER</text>
-      <text x={6} y={cy + 3} textAnchor="start" className="fill-tertiary/50 text-[8px] font-bold uppercase">SPI</text>
+      {/* Data polygon */}
+      <motion.polygon points={polyStr} fill="rgba(255,25,25,0.12)" stroke="#ff1919" strokeWidth="1.5"
+        initial={false} animate={{ points: polyStr }} transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+        style={{ filter: 'drop-shadow(0 0 6px rgba(255,25,25,0.4))' }} />
+      {/* Vertex dots */}
+      {pts.map((p, i) => (
+        <motion.circle key={i} r="3.5" fill="#ff1919" animate={{ cx: p.x, cy: p.y }}
+          transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+          style={{ filter: 'drop-shadow(0 0 5px rgba(255,25,25,0.8))' }} />
+      ))}
+      {/* Vertex labels — English only */}
+      <text x={cx} y={12} textAnchor="middle"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">STRENGTH</tspan></text>
+      <text x={size - 6} y={cy + 4} textAnchor="end"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
+      <text x={cx} y={size - 6} textAnchor="middle"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">FEROCITY</tspan></text>
+      <text x={6} y={cy + 4} textAnchor="start"><tspan className="fill-tertiary/50 text-[9px] font-bold uppercase tracking-wider">SPIRIT</tspan></text>
     </svg>
   );
 }
 
-// ─── STAGE 1: ADJUSTMENT ──────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   STAGE 1: HUD ADJUSTMENT DASHBOARD
+   ═══════════════════════════════════════════════════════════════════ */
 function AdjustStage({ onExecute }) {
   const [stats, setStats] = useState(defaultStats);
-  const remaining = TOTAL_POINTS - usedPoints(stats);
+  const spent = usedPoints(stats);
+  const remaining = TOTAL_POINTS - spent;
 
   const updateStat = (key) => (val) => {
     setStats((prev) => {
       const diff = val - prev[key];
-      const pool = TOTAL_POINTS - usedPoints(prev);
-      if (diff > pool) return prev;
+      if (diff > 0 && diff > (TOTAL_POINTS - usedPoints(prev))) return prev;
       return { ...prev, [key]: val };
     });
   };
-
-  const maxAllowed = (key) => {
-    const pool = TOTAL_POINTS - usedPoints(stats) + stats[key];
-    return Math.min(MAX_STAT, pool);
-  };
+  const maxAllowed = (key) => Math.min(MAX_STAT, TOTAL_POINTS - usedPoints(stats) + stats[key]);
 
   const randomize = () => {
     let pts = TOTAL_POINTS;
     const next = {};
-    const keys = [...STAT_KEYS];
-    keys.forEach((k, i) => {
-      if (i === keys.length - 1) {
-        next[k] = Math.max(MIN_STAT, Math.min(MAX_STAT, pts));
-      } else {
-        const maxHere = Math.min(MAX_STAT, pts - (keys.length - 1 - i) * MIN_STAT);
-        const v = Math.floor(Math.random() * (maxHere - MIN_STAT + 1)) + MIN_STAT;
-        next[k] = v;
-        pts -= v;
+    STAT_KEYS.forEach((k, i) => {
+      if (i === STAT_KEYS.length - 1) { next[k] = Math.max(MIN_STAT, Math.min(MAX_STAT, pts)); }
+      else {
+        const mx = Math.min(MAX_STAT, pts - (STAT_KEYS.length - 1 - i) * MIN_STAT);
+        const v = Math.floor(Math.random() * (mx - MIN_STAT + 1)) + MIN_STAT;
+        next[k] = v; pts -= v;
       }
     });
     setStats(next);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -30 }}
+    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center w-full max-w-3xl mx-auto"
+      className="w-full mx-auto grid grid-cols-[1fr_2fr_1fr] gap-8 items-start px-4"
+      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='20' y='22' text-anchor='middle' font-size='8' fill='%23ff1919' opacity='0.08'%3E+%3C/text%3E%3C/svg%3E\")", backgroundSize: '40px 40px' }}
     >
-      {/* Points remaining */}
-      <div className="mb-6 text-center">
-        <span className="text-[10px] uppercase tracking-[0.4em] text-tertiary/40 block mb-1">AVAILABLE SKILL POINTS</span>
-        <motion.span
-          key={remaining}
-          initial={{ scale: 1.2 }}
-          animate={{ scale: 1 }}
-          className={`text-4xl font-bold font-mono tabular-nums ${remaining === 0 ? 'text-secondary' : 'text-tertiary'}`}
-        >
-          {remaining}
-        </motion.span>
-        <span className="text-tertiary/30 text-lg font-mono"> / {TOTAL_POINTS}</span>
+      {/* ── LEFT PANEL ───────────────────────── */}
+      <div className="flex flex-col items-center">
+        <div className="flex gap-6 justify-center">
+          <HudSlider label="Strength" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
+          <HudSlider label="Intellect" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
+        </div>
+        <BracketBox label="LEVEL" labelAlign="left" className="w-full max-w-[120px]">
+          <div className="text-center">
+            <span className="text-3xl font-bold font-mono text-tertiary">{spent}</span>
+          </div>
+        </BracketBox>
       </div>
 
-      {/* Sliders + Radar */}
-      <div className="flex items-center justify-center gap-6 md:gap-10 w-full">
-        {/* Left sliders */}
-        <div className="flex gap-4 md:gap-6">
-          <VerticalSlider label="Strength" shortLabel="STR" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
-          <VerticalSlider label="Intellect" shortLabel="INT" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
-        </div>
+      {/* ── CENTER CONSOLE ────────────────────── */}
+      <div className="relative flex flex-col items-center">
+        {/* Large corner brackets around center */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-tertiary/20" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-tertiary/20" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-tertiary/20" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-tertiary/20" />
 
-        {/* Center radar */}
-        <div className="relative">
+        <div className="py-6 px-4 flex flex-col items-center w-full">
           <RadarChart stats={stats} />
-        </div>
 
-        {/* Right sliders */}
-        <div className="flex gap-4 md:gap-6">
-          <VerticalSlider label="Spirit" shortLabel="SPI" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
-          <VerticalSlider label="Ferocity" shortLabel="FER" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
+          {/* Action bar */}
+          <div className="flex items-center justify-between w-full mt-6 gap-4">
+            <button onClick={randomize}
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-3 py-2">
+              Random Selection
+            </button>
+            <motion.button onClick={() => onExecute(stats)}
+              animate={{ boxShadow: ['0 0 8px rgba(255,25,25,0.2)', '0 0 18px rgba(255,25,25,0.4)', '0 0 8px rgba(255,25,25,0.2)'] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="px-5 py-2 bg-surface border border-secondary/40 text-[10px] font-mono font-bold text-secondary uppercase tracking-[0.15em] hover:border-secondary hover:bg-secondary/5 transition-colors cursor-pointer">
+              &gt;_DISCOVER_YOUR_INNER_MASK
+            </motion.button>
+          </div>
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex gap-4 mt-8">
-        <button onClick={randomize} className="px-5 py-2 border border-tertiary/20 text-[11px] font-bold uppercase tracking-[0.3em] text-tertiary/60 hover:border-secondary hover:text-secondary transition-colors cursor-pointer">
-          Randomize
-        </button>
-        <button onClick={() => onExecute(stats)} className="px-6 py-2 bg-secondary text-black text-[11px] font-bold uppercase tracking-[0.3em] hover:shadow-[0_0_20px_rgba(255,25,25,0.5)] transition-shadow cursor-pointer">
-          Execute_Match
-        </button>
+      {/* ── RIGHT PANEL ──────────────────────── */}
+      <div className="flex flex-col items-center">
+        <div className="flex gap-6 justify-center">
+          <HudSlider label="Spirit" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
+          <HudSlider label="Ferocity" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
+        </div>
+        <BracketBox label="SKILL POINTS" labelAlign="right" className="w-full max-w-[120px]">
+          <div className="text-center">
+            <motion.span key={remaining} initial={{ scale: 1.2 }} animate={{ scale: 1 }}
+              className={`text-3xl font-bold font-mono ${remaining === 0 ? 'text-secondary' : 'text-secondary/80'}`}>
+              {remaining}
+            </motion.span>
+          </div>
+        </BracketBox>
       </div>
     </motion.div>
   );
 }
 
-// ─── STAGE 2: LOADING ─────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   STAGE 2: CYBERPUNK LOADING
+   ═══════════════════════════════════════════════════════════════════ */
 function LoadingStage() {
   const [progress, setProgress] = useState(0);
   const [line, setLine] = useState(0);
-
   const lines = [
-    '> INITIALIZING MATCH_PROTOCOL...',
-    '> SCANNING 117 MASK ENTRIES...',
-    '> PROCESSING DATA CHUNKS... HASH: 0x24EA53',
-    '> CALCULATING EUCLIDEAN DISTANCE...',
-    '> CROSS-REFERENCING ARCHETYPE DB...',
-    '> MATCH FOUND. GENERATING RESULT...',
+    '> INITIALIZING MATCH_PROTOCOL...', '> SCANNING 117 MASK ENTRIES...',
+    '> PROCESSING DATA CHUNKS... HASH: 0x24EA53', '> CALCULATING EUCLIDEAN DISTANCE...',
+    '> CROSS-REFERENCING ARCHETYPE DB...', '> MATCH FOUND. GENERATING RESULT...',
   ];
-
   useEffect(() => {
-    const dur = 2500;
-    const start = Date.now();
+    const dur = 2500; const start = Date.now();
     const tick = () => {
-      const elapsed = Date.now() - start;
-      const p = Math.min(100, (elapsed / dur) * 100);
+      const p = Math.min(100, ((Date.now() - start) / dur) * 100);
       setProgress(p);
       setLine(Math.min(lines.length - 1, Math.floor((p / 100) * lines.length)));
       if (p < 100) requestAnimationFrame(tick);
@@ -268,111 +275,60 @@ function LoadingStage() {
     requestAnimationFrame(tick);
   }, []);
 
-  const [hexFlicker, setHexFlicker] = useState('0x000000');
+  const [hex, setHex] = useState('0x000000');
   useEffect(() => {
-    const iv = setInterval(() => {
-      setHexFlicker('0x' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0').toUpperCase());
-    }, 80);
+    const iv = setInterval(() => setHex('0x' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0').toUpperCase()), 80);
     return () => clearInterval(iv);
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex flex-col items-center justify-center w-full max-w-lg mx-auto py-12 font-mono"
-    >
-      {/* Terminal lines */}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="flex flex-col items-center justify-center w-full max-w-lg mx-auto py-12 font-mono">
       <div className="w-full border border-secondary/20 bg-black/60 p-4 mb-6 text-left">
         {lines.slice(0, line + 1).map((l, i) => (
-          <motion.p
-            key={i}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-[11px] text-secondary/80 leading-relaxed"
-          >
-            {l}
-          </motion.p>
+          <motion.p key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-[11px] text-secondary/80 leading-relaxed">{l}</motion.p>
         ))}
-        <p className="text-[11px] text-tertiary/30 mt-1">{hexFlicker}</p>
+        <p className="text-[11px] text-tertiary/30 mt-1">{hex}</p>
       </div>
-
-      {/* Progress bar */}
       <div className="w-full h-1 bg-white/5 border border-white/10 overflow-hidden">
-        <motion.div
-          className="h-full bg-secondary"
-          style={{ width: `${progress}%` }}
-          transition={{ ease: 'linear' }}
-        />
+        <motion.div className="h-full bg-secondary" style={{ width: `${progress}%` }} />
       </div>
-      <span className="text-[10px] text-secondary/60 mt-2 font-mono tabular-nums">
-        {Math.round(progress)}%
-      </span>
+      <span className="text-[10px] text-secondary/60 mt-2 font-mono tabular-nums">{Math.round(progress)}%</span>
     </motion.div>
   );
 }
 
-// ─── STAGE 3: REVEAL ──────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   STAGE 3: THE REVEAL
+   ═══════════════════════════════════════════════════════════════════ */
 function RevealStage({ mask, onReset }) {
   if (!mask) return null;
   const stats = mask.stats || {};
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex flex-col items-center w-full max-w-2xl mx-auto"
-    >
-      {/* Category flash */}
-      <motion.span
-        initial={{ opacity: 0, y: 20, letterSpacing: '0.6em' }}
-        animate={{ opacity: 1, y: 0, letterSpacing: '0.3em' }}
-        transition={{ duration: 0.6 }}
-        className="text-[11px] font-bold text-secondary uppercase tracking-[0.3em] mb-2"
-      >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="flex flex-col items-center w-full max-w-2xl mx-auto">
+      <motion.span initial={{ opacity: 0, y: 20, letterSpacing: '0.6em' }} animate={{ opacity: 1, y: 0, letterSpacing: '0.3em' }}
+        transition={{ duration: 0.6 }} className="text-[11px] font-bold text-secondary uppercase tracking-[0.3em] mb-2">
         {mask.category || 'UNKNOWN ARCHETYPE'}
       </motion.span>
-
-      {/* Name */}
-      <motion.h2
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+      <motion.h2 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-5xl md:text-7xl font-bold uppercase tracking-tighter text-tertiary leading-[0.85] text-center mb-8"
-      >
+        className="text-5xl md:text-7xl font-bold uppercase tracking-tighter text-tertiary leading-[0.85] text-center mb-8">
         {mask.name}
       </motion.h2>
-
-      {/* Image */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={{ opacity: 1, scale: 1 }}
+      <motion.div initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.4, type: 'spring', stiffness: 100 }}
-        className="relative w-48 h-48 md:w-64 md:h-64 mb-8"
-      >
+        className="relative w-48 h-48 md:w-64 md:h-64 mb-8">
         <div className="absolute inset-0 border border-secondary/20">
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary/50" />
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary/50" />
         </div>
-        <motion.img
-          src={mask.image_url}
-          alt={mask.name}
-          className="w-full h-full object-contain p-4"
-          animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          style={{ filter: 'drop-shadow(0 8px 24px rgba(255,25,25,0.3))' }}
-        />
+        <motion.img src={mask.image_url} alt={mask.name} className="w-full h-full object-contain p-4"
+          animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+          style={{ filter: 'drop-shadow(0 8px 24px rgba(255,25,25,0.3))' }} />
       </motion.div>
-
-      {/* Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="w-full border-t border-tertiary/10 pt-6"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+        className="w-full border-t border-tertiary/10 pt-6">
         <p className="text-[10px] uppercase tracking-[0.4em] text-tertiary/30 mb-4">PROFILE STATS</p>
         <div className="grid grid-cols-2 gap-x-12 gap-y-4">
           {Object.entries(stats).map(([name, val]) => {
@@ -385,10 +341,7 @@ function RevealStage({ mask, onReset }) {
                 </div>
                 <div className="flex w-full gap-1">
                   {[...Array(10)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-[3px] flex-1 transition-all duration-500 ${i < segs ? 'bg-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' : 'bg-white/10'}`}
-                    />
+                    <div key={i} className={`h-[3px] flex-1 transition-all duration-500 ${i < segs ? 'bg-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' : 'bg-white/10'}`} />
                   ))}
                 </div>
               </div>
@@ -396,59 +349,40 @@ function RevealStage({ mask, onReset }) {
           })}
         </div>
       </motion.div>
-
-      {/* Description */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.9 }}
-        className="w-full mt-6 pt-6 border-t border-tertiary/5"
-      >
-        <p className="text-[10px] uppercase tracking-[0.4em] text-tertiary/30 mb-3">
-          STORY BEHIND {mask.name?.toUpperCase()}
-        </p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+        className="w-full mt-6 pt-6 border-t border-tertiary/5">
+        <p className="text-[10px] uppercase tracking-[0.4em] text-tertiary/30 mb-3">STORY BEHIND {mask.name?.toUpperCase()}</p>
         <p className="text-sm text-tertiary/70 leading-relaxed">
-          A legendary artifact from the Tuong heritage. Classified under {mask.category || 'Unknown'}, this mask carries the spirit of ancient performances. Its origins date back centuries, symbolizing distinct virtues on the stage.
+          A legendary artifact from the Tuong heritage. Classified under {mask.category || 'Unknown'}, this mask carries the spirit of ancient performances.
         </p>
       </motion.div>
-
-      {/* Reset */}
       <button onClick={onReset} className="mt-8 px-6 py-2 border border-tertiary/20 text-[11px] font-bold uppercase tracking-[0.3em] text-tertiary/60 hover:border-secondary hover:text-secondary transition-colors cursor-pointer">
         Reset
       </button>
-
-      {/* Footer metadata */}
       <div className="w-full mt-8 pt-4 border-t border-tertiary/5 flex justify-between text-[9px] font-mono text-tertiary/15 uppercase tracking-widest">
-        <span>ID: {mask.id}</span>
-        <span>DISCOVER_SYSTEM_V.1.0</span>
+        <span>ID: {mask.id}</span><span>DISCOVER_SYSTEM_V.1.0</span>
       </div>
     </motion.div>
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT — orchestrates the 3 stages
+   ═══════════════════════════════════════════════════════════════════ */
 export default function DiscoverMask() {
-  const [stage, setStage] = useState('adjust'); // 'adjust' | 'loading' | 'result'
+  const [stage, setStage] = useState('adjust');
   const [matchedMask, setMatchedMask] = useState(null);
 
   const handleExecute = async (stats) => {
     setStage('loading');
-
     try {
       const res = await fetch(`${API_BASE}/api/masks/match`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(stats),
       });
       const json = await res.json();
       const mask = json.data || json;
-
-      // Fix relative image URL
-      if (mask.image_url && !mask.image_url.startsWith('http')) {
-        mask.image_url = `${API_BASE}${mask.image_url}`;
-      }
-
-      // Wait for loading animation to finish (min 2.8s total)
+      if (mask.image_url && !mask.image_url.startsWith('http')) mask.image_url = `${API_BASE}${mask.image_url}`;
       await new Promise((r) => setTimeout(r, 2800));
       setMatchedMask(mask);
       setStage('result');
@@ -458,17 +392,12 @@ export default function DiscoverMask() {
     }
   };
 
-  const handleReset = () => {
-    setMatchedMask(null);
-    setStage('adjust');
-  };
-
   return (
     <div className="w-full py-12 px-6">
       <AnimatePresence mode="wait">
         {stage === 'adjust' && <AdjustStage key="adjust" onExecute={handleExecute} />}
         {stage === 'loading' && <LoadingStage key="loading" />}
-        {stage === 'result' && <RevealStage key="result" mask={matchedMask} onReset={handleReset} />}
+        {stage === 'result' && <RevealStage key="result" mask={matchedMask} onReset={() => { setMatchedMask(null); setStage('adjust'); }} />}
       </AnimatePresence>
     </div>
   );
