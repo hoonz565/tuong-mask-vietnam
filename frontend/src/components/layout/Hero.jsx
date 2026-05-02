@@ -128,9 +128,10 @@ export default function Hero() {
                 {...fadeIn(0.55)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="mt-6 self-start flex items-center gap-2 px-5 py-2 border border-secondary/50 text-secondary text-xs tracking-widest font-mono uppercase hover:bg-secondary/10 transition-colors"
+                onClick={() => document.getElementById('discover-section')?.scrollIntoView({ behavior: 'smooth' })}
+                className="mt-6 self-start flex items-center gap-2 px-5 py-2 border border-secondary/50 text-secondary text-xs tracking-widest font-mono uppercase hover:bg-secondary/10 transition-colors cursor-pointer"
               >
-                ▶ &nbsp;_EXPLORE_ARCHIVE
+                ▶ &nbsp;_DISCOVER_YOUR_MASK
               </motion.button>
             </div>
 

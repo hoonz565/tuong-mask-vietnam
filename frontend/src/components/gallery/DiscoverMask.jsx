@@ -55,9 +55,9 @@ function HudSlider({ label, value, onChange, maxAllowed }) {
     <div className="flex flex-col items-center select-none border border-tertiary/20 p-3 bg-white/[0.01]">
       {/* Value box — square */}
       <div className="w-20 h-20 bg-[#1a1a1a] border border-tertiary/25 flex items-center justify-center mb-4">
-        <motion.span key={value} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-5xl font-black font-mono text-tertiary tabular-nums">
+        <span className="text-5xl font-black font-mono text-tertiary tabular-nums">
           {value}
-        </motion.span>
+        </span>
       </div>
 
       {/* Tick track */}
@@ -180,7 +180,7 @@ function RadarChart({ stats }) {
 /* ═══════════════════════════════════════════════════════════════════
    STAGE 1: HUD ADJUSTMENT DASHBOARD
    ═══════════════════════════════════════════════════════════════════ */
-function AdjustStage({ onExecute }) {
+function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
   const [stats, setStats] = useState(defaultStats);
   const spent = usedPoints(stats);
   const remaining = TOTAL_POINTS - spent;
@@ -209,67 +209,117 @@ function AdjustStage({ onExecute }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }}
-      transition={{ duration: 0.4 }}
-      className="w-full min-h-[85vh] flex justify-between items-start px-8 md:px-16 lg:px-24 py-8"
-      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='20' y='22' text-anchor='middle' font-size='8' fill='%23ff1919' opacity='0.08'%3E+%3C/text%3E%3C/svg%3E\")", backgroundSize: '40px 40px' }}
-    >
-      {/* ── LEFT PANEL ───────────────────────── */}
-      <div className="flex flex-col items-center">
-        <div className="flex gap-4 justify-center">
-          <HudSlider label="Strength" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
-          <HudSlider label="Intellect" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
-        </div>
-        <BracketBox label="LEVEL" labelAlign="left" className="w-full min-w-[200px] !p-6">
-          <div className="text-center">
-            <span className="text-8xl font-bold font-mono text-tertiary leading-none">{spent}</span>
+    <div className="relative w-full overflow-hidden">
+      {/* ── GATE / LOCK OVERLAY ───────────────── */}
+      <AnimatePresence>
+        {!isUnlocked && (
+          <motion.div
+            key="lock-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface/40 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1], delay: 0.1 }}
+              className="flex flex-col items-center"
+            >
+              <span className="bg-secondary text-surface px-8 py-4 text-sm md:text-md font-black tracking-[0.6em] uppercase mb-10">
+                DISCOVER
+              </span>
+              
+              <h1 
+                className="text-tertiary text-[10vw] md:text-9xl font-black uppercase tracking-[0.25em] text-center leading-[0.8] mb-14 drop-shadow-[0_0_20px_rgba(255,25,25,0.4)]"
+                style={{ WebkitTextStroke: '1px rgba(255,25,25,0.1)' }}
+              >
+                YOUR<br/>MASK
+              </h1>
+
+              <button
+                onClick={() => setIsUnlocked(true)}
+                className="group relative px-12 py-5 border border-secondary/50 text-secondary font-mono text-sm font-bold tracking-[0.4em] uppercase hover:bg-secondary/10 transition-all duration-300 cursor-pointer"
+              >
+                {/* Targeting Brackets */}
+                <span className="absolute -top-1.5 -left-1.5 w-3 h-3 border-t-2 border-l-2 border-secondary" />
+                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 border-t-2 border-r-2 border-secondary" />
+                <span className="absolute -bottom-1.5 -left-1.5 w-3 h-3 border-b-2 border-l-2 border-secondary" />
+                <span className="absolute -bottom-1.5 -right-1.5 w-3 h-3 border-b-2 border-r-2 border-secondary" />
+                
+                &gt;_EXECUTE_CREATION
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── BACKGROUND DASHBOARD ─────────────── */}
+      <motion.div 
+        animate={{ 
+          filter: isUnlocked ? 'blur(0px) brightness(1)' : 'blur(12px) brightness(0.5)',
+          pointerEvents: isUnlocked ? 'auto' : 'none'
+        }}
+        transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
+        className="w-full min-h-[85vh] flex justify-between items-start px-8 md:px-16 lg:px-24 py-8"
+        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='20' y='22' text-anchor='middle' font-size='8' fill='%23ff1919' opacity='0.08'%3E+%3C/text%3E%3C/svg%3E\")", backgroundSize: '40px 40px' }}
+      >
+        {/* ── LEFT PANEL ───────────────────────── */}
+        <div className="flex flex-col items-center">
+          <div className="flex gap-4 justify-center">
+            <HudSlider label="Strength" value={stats.strength} onChange={updateStat('strength')} maxAllowed={maxAllowed('strength')} />
+            <HudSlider label="Intellect" value={stats.intellect} onChange={updateStat('intellect')} maxAllowed={maxAllowed('intellect')} />
           </div>
-        </BracketBox>
-      </div>
+          <BracketBox label="LEVEL" labelAlign="left" className="w-full min-w-[200px] !p-6">
+            <div className="text-center">
+              <span className="text-8xl font-bold font-mono text-tertiary leading-none">{spent}</span>
+            </div>
+          </BracketBox>
+        </div>
 
-      {/* ── CENTER CONSOLE ────────────────────── */}
-      <div className="relative flex flex-col items-center flex-1">
-        {/* Large corner brackets around center */}
-        <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-tertiary/20" />
-        <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-tertiary/20" />
-        <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-tertiary/20" />
-        <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-tertiary/20" />
+        {/* ── CENTER CONSOLE ────────────────────── */}
+        <div className="relative flex flex-col items-center flex-1">
+          {/* Large corner brackets around center */}
+          <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-tertiary/20" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-tertiary/20" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-tertiary/20" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-tertiary/20" />
 
-        <div className="py-6 px-4 flex flex-col items-center w-full">
-          <RadarChart stats={stats} />
+          <div className="py-6 px-4 flex flex-col items-center w-full">
+            <RadarChart stats={stats} />
 
-          {/* Action bar */}
-          <div className="flex items-center justify-between w-full mt-6 gap-4">
-            <button onClick={randomize}
-              className="text-sm font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-4 py-3">
-              Random Selection
-            </button>
-            <motion.button onClick={() => onExecute(stats)}
-              animate={{ boxShadow: ['0 0 8px rgba(255,25,25,0.2)', '0 0 18px rgba(255,25,25,0.4)', '0 0 8px rgba(255,25,25,0.2)'] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="px-10 py-4 bg-surface border border-secondary/40 text-sm font-mono font-bold text-secondary uppercase tracking-[0.2em] hover:border-secondary hover:bg-secondary/5 transition-colors cursor-pointer">
-              &gt;_DISCOVER_YOUR_INNER_MASK
-            </motion.button>
+            {/* Action bar */}
+            <div className="flex items-center justify-between w-full mt-6 gap-4">
+              <button onClick={randomize}
+                className="text-sm font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-4 py-3">
+                Random Selection
+              </button>
+              <motion.button onClick={() => onExecute(stats)}
+                animate={{ boxShadow: ['0 0 8px rgba(255,25,25,0.2)', '0 0 18px rgba(255,25,25,0.4)', '0 0 8px rgba(255,25,25,0.2)'] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="px-10 py-4 bg-surface border border-secondary/40 text-sm font-mono font-bold text-secondary uppercase tracking-[0.2em] hover:border-secondary hover:bg-secondary/5 transition-colors cursor-pointer">
+                &gt;_DISCOVER_YOUR_INNER_MASK
+              </motion.button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── RIGHT PANEL ──────────────────────── */}
-      <div className="flex flex-col items-center">
-        <div className="flex gap-4 justify-center">
-          <HudSlider label="Spirit" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
-          <HudSlider label="Ferocity" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
-        </div>
-        <BracketBox label="SKILL POINTS" labelAlign="right" className="w-full min-w-[200px] !p-6">
-          <div className="text-center">
-            <motion.span key={remaining} initial={{ scale: 1.2 }} animate={{ scale: 1 }}
-              className={`text-8xl font-bold font-mono leading-none ${remaining === 0 ? 'text-secondary' : 'text-secondary/80'}`}>
-              {remaining}
-            </motion.span>
+        {/* ── RIGHT PANEL ──────────────────────── */}
+        <div className="flex flex-col items-center">
+          <div className="flex gap-4 justify-center">
+            <HudSlider label="Spirit" value={stats.spirit} onChange={updateStat('spirit')} maxAllowed={maxAllowed('spirit')} />
+            <HudSlider label="Ferocity" value={stats.ferocity} onChange={updateStat('ferocity')} maxAllowed={maxAllowed('ferocity')} />
           </div>
-        </BracketBox>
-      </div>
-    </motion.div>
+          <BracketBox label="SKILL POINTS" labelAlign="right" className="w-full min-w-[200px] !p-6">
+            <div className="text-center">
+              <span className={`text-8xl font-bold font-mono leading-none ${remaining === 0 ? 'text-secondary' : 'text-secondary/80'}`}>
+                {remaining}
+              </span>
+            </div>
+          </BracketBox>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -392,6 +442,7 @@ function RevealStage({ mask, onReset }) {
 export default function DiscoverMask() {
   const [stage, setStage] = useState('adjust');
   const [matchedMask, setMatchedMask] = useState(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const handleExecute = async (stats) => {
     setStage('loading');
@@ -415,7 +466,14 @@ export default function DiscoverMask() {
   return (
     <div className="w-full py-12 px-6">
       <AnimatePresence mode="wait">
-        {stage === 'adjust' && <AdjustStage key="adjust" onExecute={handleExecute} />}
+        {stage === 'adjust' && (
+          <AdjustStage 
+            key="adjust" 
+            onExecute={handleExecute} 
+            isUnlocked={isUnlocked} 
+            setIsUnlocked={setIsUnlocked} 
+          />
+        )}
         {stage === 'loading' && <LoadingStage key="loading" />}
         {stage === 'result' && <RevealStage key="result" mask={matchedMask} onReset={() => { setMatchedMask(null); setStage('adjust'); }} />}
       </AnimatePresence>

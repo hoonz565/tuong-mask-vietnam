@@ -80,7 +80,7 @@ export default function MaskGallery({ masks, loading, error }) {
 
       {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
       {!selectedMask && (
-        <div className="w-full mt-16">
+        <div id="discover-section" className="w-full mt-16">
           {/* Glowing divider */}
           <div className="flex items-center gap-4 mb-8">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-secondary/40 to-transparent" />
