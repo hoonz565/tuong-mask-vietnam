@@ -5,6 +5,7 @@ import Header from './components/layout/Header';
 import Hero from './components/layout/Hero';
 import MaskGallery from './components/gallery/MaskGallery';
 import GalleryFooter from './components/layout/GalleryFooter';
+import { getAllMasks } from './api/maskService';
 
 function App() {
   const [masks, setMasks] = useState([]);
@@ -12,25 +13,12 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/masks')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to connect to the gallery server.');
-        return res.json();
-      })
-      .then(data => {
-        const API_BASE = 'http://localhost:8000';
-        // Augment data: fix relative image URLs + add fallback description
-        const augmentedData = data.map((item) => ({
-          ...item,
-          image_url: item.image_url && !item.image_url.startsWith('http')
-            ? `${API_BASE}${item.image_url}`
-            : item.image_url,
-          description: item.description || `A legendary artifact from the Tuong heritage. Classified under ${item.category || 'Unknown'}, this mask carries the spirit of ancient performances. Its origins date back centuries, symbolizing distinct virtues on the stage.`,
-        }));
-        setMasks(augmentedData);
+    getAllMasks()
+      .then((data) => {
+        setMasks(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
       });

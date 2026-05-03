@@ -4,6 +4,7 @@
 - Strictly use **Functional Components**.
 - Naming convention: **PascalCase** for files and components (e.g., `GridView.jsx`).
 - Single Responsibility: Each component does **one thing**. Separate business logic from UI rendering.
+- **Data Fetching Rule**: Components MUST NOT call `fetch()` or any network API directly. All data fetching and backend communication MUST be delegated to functions in the `src/api/` layer (`maskService.js`, etc.).
 
 ## Styling (Tailwind CSS 4)
 - Use pure **Tailwind CSS 4** classes. ZERO inline styles (unless required by Framer Motion dynamic values).

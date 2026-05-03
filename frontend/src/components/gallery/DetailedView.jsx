@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Scan } from 'lucide-react';
+import { API_BASE } from '../../api/client';
 
 export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
   if (!selectedMask) return null;
@@ -26,7 +27,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
             src={selectedMask.image_url}
             alt={selectedMask.name}
             className="w-full h-full object-contain relative z-10"
-            onError={(e) => { e.target.src = 'http://localhost:8000/static/images/placeholder.png'; }}
+            onError={(e) => { e.target.src = `${API_BASE}/static/images/placeholder.png`; }}
           />
         </div>
       </div>
@@ -51,7 +52,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                   src={mask.image_url}
                   alt={mask.name}
                   className={`w-full h-full object-contain transition-all duration-300 ${selectedMask.id === mask.id ? 'scale-110' : 'scale-100 group-hover:scale-110'}`}
-                  onError={(e) => { e.target.src = 'http://localhost:8000/static/images/placeholder.png'; }}
+                  onError={(e) => { e.target.src = `${API_BASE}/static/images/placeholder.png`; }}
                 />
               </button>
             ))}

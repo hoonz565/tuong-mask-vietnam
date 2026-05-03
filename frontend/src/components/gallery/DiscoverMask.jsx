@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { matchMask } from '../../api/maskService';
 const TOTAL_POINTS = 200;
 const MIN_STAT = 10;
 const MAX_STAT = 100;
@@ -447,18 +446,14 @@ export default function DiscoverMask() {
   const handleExecute = async (stats) => {
     setStage('loading');
     try {
-      const res = await fetch(`${API_BASE}/api/masks/match`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(stats),
-      });
-      const json = await res.json();
-      const mask = json.data || json;
-      if (mask.image_url && !mask.image_url.startsWith('http')) mask.image_url = `${API_BASE}${mask.image_url}`;
-      await new Promise((r) => setTimeout(r, 2800));
+      const [mask] = await Promise.all([
+        matchMask(stats),
+        new Promise((r) => setTimeout(r, 2800)),
+      ]);
       setMatchedMask(mask);
       setStage('result');
     } catch (err) {
-      console.error('Match failed:', err);
+      console.error('[DiscoverMask] Match failed:', err);
       setStage('adjust');
     }
   };
