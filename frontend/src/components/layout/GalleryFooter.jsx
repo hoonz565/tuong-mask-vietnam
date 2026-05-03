@@ -56,7 +56,7 @@ function MaskMarquee({ masks }) {
               <p className="text-secondary text-[9px] font-mono uppercase tracking-[0.35em] mb-0.5 leading-none">
                 {loopMasks[hoveredIndex]?.category || 'UNKNOWN'}
               </p>
-              <p className="text-tertiary text-[11px] font-black uppercase tracking-wider leading-tight">
+              <p className="text-tertiary text-[11px] font-sans font-bold uppercase tracking-wider leading-tight">
                 {loopMasks[hoveredIndex]?.name}
               </p>
             </div>
@@ -171,14 +171,16 @@ export default function GalleryFooter({ masks = [] }) {
 
         {/* RIGHT — Credits */}
         <div className="mt-6 md:mt-0 md:pl-16">
-          <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-black/50 mb-3">CREDITS:</p>
-          <div className="text-[11px] font-mono text-black/80 leading-relaxed uppercase tracking-wider">
-            <p className="text-black/50">MASKS DRAWN BY NSND</p>
+          <p className="font-semibold leading-[1.2] text-[clamp(1.2rem,2.4vw,2rem)] text-black/50 mb-1">CREDITS:</p>
+          <div>
+            <p className="font-semibold leading-[1.2] text-[clamp(1.2rem,2.4vw,2rem)] text-black/70">
+              ORIGINAL ARTWORK BY ARTIST
+            </p>
             <a
               href="https://www.facebook.com/share/p/1JVhwopstn/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-black text-black hover:underline underline-offset-2 decoration-black/40 transition-all"
+              className="font-semibold leading-[1.2] text-[clamp(1.2rem,2.4vw,2rem)] text-black underline underline-offset-4 decoration-black/40 hover:decoration-black transition-all"
             >
               HOÀNG SONG HÀO
             </a>
@@ -190,20 +192,6 @@ export default function GalleryFooter({ masks = [] }) {
       {masks.length > 0 && (
         <MaskMarquee masks={masks} />
       )}
-
-      {/* ── WATERMARK: "TUONG MASK" ──
-      <div className="relative w-full overflow-hidden" style={{ height: 'clamp(60px, 10vw, 120px)' }}>
-        <span
-          aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 font-black uppercase leading-[0.85] tracking-tighter select-none pointer-events-none w-full text-center text-black"
-          style={{
-            fontSize: 'clamp(3rem, 9vw, 8rem)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          TUONG MASK
-        </span>
-      </div> */}
 
       {/* ── BOTTOM META BAR ── */}
       <div className="flex items-center justify-between px-6 py-2 bg-black/10 border-t border-black/15">
