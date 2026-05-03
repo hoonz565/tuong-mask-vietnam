@@ -30,10 +30,14 @@ export default function GridView({ masks, setSelectedMask, containerVariants, it
             {/* Actual Image*/}
             <div className="relative w-full h-full p-2">
               <img
-                src={mask.image_url}
+                src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
                 alt={mask.name}
                 className="w-full h-full object-contain scale-125"
-                onError={(e) => { e.target.src = '/static/images/placeholder.png'; }}
+                onError={(e) => { 
+                // Thêm dòng này để bạn kiểm tra link lỗi ở tab Console (F12)
+                console.error("Không tìm thấy ảnh tại:", e.target.src);
+                e.target.src = '/static/images/placeholder.png'; 
+              }}
               />
               {/* Scanline overlay */}
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSJ0cmFuc3BhcmVudCIvPgo8bGluZSB4MT0iMCIgeTE9IjAiIHgyPSI0IiB5Mj0iMCIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPgo8L3N2Zz4=')] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500" />
