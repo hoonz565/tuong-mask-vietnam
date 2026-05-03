@@ -3,7 +3,8 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 export const API_BASE = BASE_URL;
-export const API_ENDPOINT = BASE_URL;
+// export const API_ENDPOINT = BASE_URL;
+export const API_ENDPOINT = `${BASE_URL}/api`;
 /**
  * Core fetch wrapper.
  * - Unwraps the { data, status } response envelope (api.md convention).
