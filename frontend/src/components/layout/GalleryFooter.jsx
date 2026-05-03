@@ -163,8 +163,8 @@ export default function GalleryFooter({ masks = [] }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-0 px-6 pt-8 pb-6 items-start">
 
         {/* LEFT — Mission text */}
-        <div className="md:pr-16 md:border-r border-black/20">
-          <p className="text-black font-semibold leading-[1.2] text-[clamp(1rem,1.8vw,1.4rem)]">
+        <div className="md:pr-16 md:border-r border-black/32">
+          <p className="text-black font-semibold leading-[1.2] text-[clamp(1.2rem,2.4vw,2rem)]">
             Step into Tuong Archive, where hidden histories converge with a reimagined future, and ancient masks become symbols of untold possibilities.
           </p>
         </div>
@@ -173,14 +173,15 @@ export default function GalleryFooter({ masks = [] }) {
         <div className="mt-6 md:mt-0 md:pl-16">
           <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-black/50 mb-3">CREDITS:</p>
           <div className="text-[11px] font-mono text-black/80 leading-relaxed uppercase tracking-wider">
-            <p className="font-bold">TUONG ARCHIVE STUDIO</p>
-            <p className="text-black/50 mt-1">CONCEPT & DESIGN</p>
-            <br />
-            <p className="font-bold">REACT + FASTAPI</p>
-            <p className="text-black/50">BY INTERNAL_SYSTEMS</p>
-            <br />
-            <p className="font-bold">117 UNIQUE ARTIFACTS</p>
-            <p className="text-black/50">VIETNAMESE HERITAGE</p>
+            <p className="text-black/50">MASKS DRAWN BY NSND</p>
+            <a
+              href="https://www.facebook.com/share/p/1JVhwopstn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-black text-black hover:underline underline-offset-2 decoration-black/40 transition-all"
+            >
+              HOÀNG SONG HÀO
+            </a>
           </div>
         </div>
       </div>
@@ -190,7 +191,7 @@ export default function GalleryFooter({ masks = [] }) {
         <MaskMarquee masks={masks} />
       )}
 
-      {/* ── WATERMARK: "TUONG MASK" ── */}
+      {/* ── WATERMARK: "TUONG MASK" ──
       <div className="relative w-full overflow-hidden" style={{ height: 'clamp(60px, 10vw, 120px)' }}>
         <span
           aria-hidden="true"
@@ -202,7 +203,7 @@ export default function GalleryFooter({ masks = [] }) {
         >
           TUONG MASK
         </span>
-      </div>
+      </div> */}
 
       {/* ── BOTTOM META BAR ── */}
       <div className="flex items-center justify-between px-6 py-2 bg-black/10 border-t border-black/15">
