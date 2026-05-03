@@ -30,7 +30,7 @@ export default function GridView({ masks, setSelectedMask, containerVariants, it
             {/* Actual Image*/}
             <div className="relative w-full h-full p-2">
               <img
-                src={mask.image_url}
+                src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
                 alt={mask.name}
                 className="w-full h-full object-contain scale-125"
                 onError={(e) => { e.target.src = '/static/images/placeholder.png'; }}
