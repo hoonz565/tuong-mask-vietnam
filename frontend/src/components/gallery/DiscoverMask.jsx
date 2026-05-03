@@ -216,37 +216,51 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
             key="lock-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface/40 backdrop-blur-sm"
+            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface/50 backdrop-blur-sm"
           >
-            <motion.div 
-              initial={{ y: 40, opacity: 0 }}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1], delay: 0.1 }}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center gap-0 w-full px-6 text-center"
             >
-              <span className="bg-secondary text-surface px-8 py-4 text-sm md:text-md font-black tracking-[0.6em] uppercase mb-10">
-                DISCOVER
+              {/* Label — small monospaced tag */}
+              <span className="font-mono text-sm font-bold tracking-[0.6em] uppercase text-secondary mb-6">
+                — DISCOVER —
               </span>
-              
-              <h1 
-                className="text-tertiary text-[10vw] md:text-9xl font-black uppercase tracking-[0.25em] text-center leading-[0.8] mb-14 drop-shadow-[0_0_20px_rgba(255,25,25,0.4)]"
-                style={{ WebkitTextStroke: '1px rgba(255,25,25,0.1)' }}
+
+              {/* Main headline — single horizontal line, full editorial scale */}
+              <h1
+                className="font-black uppercase text-tertiary leading-none whitespace-nowrap"
+                style={{
+                  fontSize: 'clamp(3.5rem, 10vw, 10rem)',
+                  letterSpacing: '0.18em',
+                  textShadow: '0 0 40px rgba(255,25,25,0.25), 0 0 80px rgba(255,25,25,0.1)',
+                  WebkitTextStroke: '1px rgba(255,25,25,0.15)',
+                }}
               >
-                YOUR<br/>MASK
+                YOUR MASK
               </h1>
 
+              {/* Divider line */}
+              <div className="flex items-center gap-4 w-full max-w-md mt-8 mb-10">
+                <div className="flex-1 h-px bg-secondary/20" />
+                <span className="text-[9px] font-mono tracking-[0.4em] text-secondary/40 uppercase">SYSTEM_READY</span>
+                <div className="flex-1 h-px bg-secondary/20" />
+              </div>
+
+              {/* Execute button */}
               <button
                 onClick={() => setIsUnlocked(true)}
-                className="group relative px-12 py-5 border border-secondary/50 text-secondary font-mono text-sm font-bold tracking-[0.4em] uppercase hover:bg-secondary/10 transition-all duration-300 cursor-pointer"
+                className="group relative px-14 py-5 border border-secondary/40 text-secondary font-mono text-xs font-bold tracking-[0.45em] uppercase hover:bg-secondary/8 hover:border-secondary transition-all duration-300 cursor-pointer"
               >
                 {/* Targeting Brackets */}
-                <span className="absolute -top-1.5 -left-1.5 w-3 h-3 border-t-2 border-l-2 border-secondary" />
-                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 border-t-2 border-r-2 border-secondary" />
-                <span className="absolute -bottom-1.5 -left-1.5 w-3 h-3 border-b-2 border-l-2 border-secondary" />
-                <span className="absolute -bottom-1.5 -right-1.5 w-3 h-3 border-b-2 border-r-2 border-secondary" />
-                
-                &gt;_EXECUTE_CREATION
+                <span className="absolute -top-[3px] -left-[3px] w-3 h-3 border-t-2 border-l-2 border-secondary transition-all duration-300 group-hover:w-4 group-hover:h-4" />
+                <span className="absolute -top-[3px] -right-[3px] w-3 h-3 border-t-2 border-r-2 border-secondary transition-all duration-300 group-hover:w-4 group-hover:h-4" />
+                <span className="absolute -bottom-[3px] -left-[3px] w-3 h-3 border-b-2 border-l-2 border-secondary transition-all duration-300 group-hover:w-4 group-hover:h-4" />
+                <span className="absolute -bottom-[3px] -right-[3px] w-3 h-3 border-b-2 border-r-2 border-secondary transition-all duration-300 group-hover:w-4 group-hover:h-4" />
+                &gt;_ EXECUTE CREATION
               </button>
             </motion.div>
           </motion.div>
