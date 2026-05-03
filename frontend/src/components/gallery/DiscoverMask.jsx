@@ -420,20 +420,40 @@ function RevealStage({ mask, onReset }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex-1 lg:flex-[65] px-8 md:px-16 pt-12 pb-12 flex flex-col"
+          className="flex-1 lg:flex-[65] pl-8 md:pl-16 pr-0 pt-0 pb-0 flex flex-col"
         >
-          <p className="text-[10px] font-mono uppercase tracking-[0.5em] text-tertiary/20 mb-4">
-            IDENTITY_VERIFICATION / SUCCESS
-          </p>
-          <h2 className="font-black uppercase leading-[0.8] text-secondary"
-            style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
-          >
-            THE STORY BEHIND<br />
-            <span className="text-tertiary block mt-6">{mask.name || mask.category}</span>
-          </h2>
+          {/* THE STORY BEHIND - Boxed (Equal width, flush right) */}
+          <div className="relative w-full p-8 border-b border-secondary/10 bg-white/[0.01]">
+            {/* Corner Markers (Red) */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+            
+            <h2 className="font-black uppercase leading-none text-secondary text-left"
+              style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
+            >
+              THE STORY BEHIND
+            </h2>
+          </div>
 
-          {/* EXIT BUTTON */}
-          <div className="mt-12">
+          {/* Mask Name - Boxed (Equal width, flush right) */}
+          <div className="relative w-full p-8 border-b border-tertiary/10 bg-white/[0.02]">
+            {/* Corner Markers (Red) */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+            
+            <h3 className="font-black uppercase leading-none text-tertiary text-left"
+              style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
+            >
+              {mask.name || mask.category}
+            </h3>
+          </div>
+
+          {/* EXIT BUTTON (Aligned Left in the remaining space) */}
+          <div className="mt-auto p-0 h-60">
             <button
               onClick={onReset}
               className="group w-20 h-20 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
@@ -450,7 +470,7 @@ function RevealStage({ mask, onReset }) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] aspect-square lg:aspect-auto flex items-center justify-center bg-white/[0.02] overflow-hidden group relative"
+          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex items-center justify-center bg-white/[0.02] overflow-hidden group relative"
         >
           {/* Gallery-style Corner Markers */}
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary transition-all duration-500" />
