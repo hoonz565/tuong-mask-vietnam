@@ -429,9 +429,9 @@ function RevealStage({ mask, onReset }) {
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
             <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
-            
+
             <h2 className="font-black uppercase leading-none text-secondary text-left"
-              style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
+              style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
             >
               THE STORY BEHIND
             </h2>
@@ -444,9 +444,9 @@ function RevealStage({ mask, onReset }) {
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
             <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
-            
+
             <h3 className="font-black uppercase leading-none text-tertiary text-left"
-              style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
+              style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
             >
               {mask.name || mask.category}
             </h3>
@@ -481,7 +481,7 @@ function RevealStage({ mask, onReset }) {
           <motion.img
             src={mask.image_url}
             alt={mask.name}
-            className="w-full h-full object-contain relative z-10 scale-150"
+            className="w-full h-full object-contain relative z-10 scale-110"
             style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
           />
         </motion.div>
