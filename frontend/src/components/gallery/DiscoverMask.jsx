@@ -210,22 +210,7 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
 
   return (
     <div className="relative w-full overflow-hidden">
-      {/* ── EXIT BUTTON (Only visible when unlocked) ── */}
-      <AnimatePresence>
-        {isUnlocked && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={onExit}
-            className="group absolute top-8 right-8 z-[60] w-12 h-12 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-surface/80 backdrop-blur-sm"
-          >
-            <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <X size={20} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* EXIT BUTTON MOVED TO PARENT */}
 
       {/* ── GATE / LOCK OVERLAY ───────────────── */}
       <AnimatePresence>
@@ -292,7 +277,7 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
           pointerEvents: isUnlocked ? 'auto' : 'none'
         }}
         transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
-        className="w-full min-h-[85vh] flex justify-between items-start px-8 md:px-16 lg:px-24 py-8"
+        className="w-full min-h-[85vh] flex justify-between items-start px-0 py-8"
         style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='20' y='22' text-anchor='middle' font-size='8' fill='%23ff1919' opacity='0.08'%3E+%3C/text%3E%3C/svg%3E\")", backgroundSize: '40px 40px' }}
       >
         {/* ── LEFT PANEL ───────────────────────── */}
@@ -423,7 +408,7 @@ function RevealStage({ mask, onReset }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full pl-8 md:pl-16 pr-0 pt-0 pb-0 flex flex-col"
+            className="w-full flex flex-col"
           >
             {/* THE STORY BEHIND */}
             <div className="relative w-full px-8 py-4 border-b border-secondary/10 bg-white/[0.01]">
@@ -512,7 +497,7 @@ function RevealStage({ mask, onReset }) {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex flex-col justify-start sticky top-0 h-screen bg-black/10"
+          className="lg:flex-[35] border-l border-white/10 w-full flex flex-col justify-start sticky top-0 h-screen bg-black/10"
         >
           {/* MASK CONTAINER */}
           <div className="relative w-full border-b border-white/10 flex items-center justify-center bg-white/[0.02] overflow-hidden group py-12 px-8">
@@ -627,7 +612,23 @@ export default function DiscoverMask() {
   };
 
   return (
-    <div className="w-full py-12 px-6 relative">
+    <div className="w-full py-12 relative">
+      <AnimatePresence>
+        {stage === 'adjust' && isUnlocked && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={handleExit}
+            className="group absolute top-0 right-0 z-[100] w-12 h-12 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-black/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+          >
+            <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-tertiary/40 group-hover:border-secondary transition-colors" />
+            <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-tertiary/40 group-hover:border-secondary transition-colors" />
+            <X size={20} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {stage === 'adjust' && (
           <AdjustStage
@@ -639,7 +640,7 @@ export default function DiscoverMask() {
           />
         )}
         {stage === 'loading' && <LoadingStage key="loading" />}
-        {stage === 'result' && <RevealStage key="result" mask={matchedMask} onReset={() => { setMatchedMask(null); setStage('adjust'); }} />}
+        {stage === 'result' && <RevealStage key="result" mask={matchedMask} onReset={handleExit} />}
       </AnimatePresence>
     </div>
   );
