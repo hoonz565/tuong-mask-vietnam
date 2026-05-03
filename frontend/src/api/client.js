@@ -1,8 +1,7 @@
 // api/client.js — Centralized API configuration
 // All backend communication routes through this module.
 
-const BASE_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
-
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 export const API_BASE = BASE_URL;
 export const API_ENDPOINT = `${BASE_URL}/api`;
 
