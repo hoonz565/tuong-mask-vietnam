@@ -414,7 +414,7 @@ function RevealStage({ mask, onReset }) {
       className="w-full bg-black"
     >
       {/* ── HEADER — BRANDING & IDENTITY (Aligned with 65/35 Grid) ───────────────────────── */}
-      <div className="w-full border-b border-white/10 flex flex-col lg:flex-row items-stretch">
+      <div className="w-full flex flex-col lg:flex-row items-start min-h-screen">
         {/* Left Branding Area (65%) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -423,7 +423,7 @@ function RevealStage({ mask, onReset }) {
           className="flex-1 lg:flex-[65] pl-8 md:pl-16 pr-0 pt-0 pb-0 flex flex-col"
         >
           {/* THE STORY BEHIND - Boxed (Equal width, flush right) */}
-          <div className="relative w-full p-8 border-b border-secondary/10 bg-white/[0.01]">
+          <div className="relative w-full px-8 py-4 border-b border-secondary/10 bg-white/[0.01]">
             {/* Corner Markers (Red) */}
             <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
@@ -438,7 +438,7 @@ function RevealStage({ mask, onReset }) {
           </div>
 
           {/* Mask Name - Boxed (Equal width, flush right) */}
-          <div className="relative w-full p-8 border-b border-tertiary/10 bg-white/[0.02]">
+          <div className="relative w-full px-8 py-4 border-b border-tertiary/10 bg-white/[0.02]">
             {/* Corner Markers (Red) */}
             <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
@@ -452,16 +452,46 @@ function RevealStage({ mask, onReset }) {
             </h3>
           </div>
 
-          {/* EXIT BUTTON (Aligned Left in the remaining space) */}
-          <div className="mt-auto p-0 h-60">
-            <button
-              onClick={onReset}
-              className="group w-20 h-20 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
+          {/* BUTTON & STORY ALIGNMENT ROW — DOCKED TOP & RIGHT */}
+          <div className="w-full flex flex-row items-start justify-between pt-0 pr-0">
+            {/* EXIT BUTTON (Left Aligned) */}
+            <div className="pt-12 pl-0">
+              <button
+                onClick={onReset}
+                className="group w-20 h-20 flex-shrink-0 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
+              >
+                <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+                <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+                <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+              </button>
+            </div>
+
+            {/* Story paragraph — docked to top-right corner of column */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative z-10 w-[450px] p-8 border-l border-b border-secondary/10 bg-white/[0.01]"
             >
-              <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-              <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-              <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-            </button>
+              {/* Corner Markers (Red) */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+
+              <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-secondary/60 mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-secondary animate-pulse" />
+                STORY_LOG / {mask.id?.toString().padStart(3, '0')}
+              </p>
+              <div className="space-y-6 text-tertiary font-medium leading-[1.6]" style={{ fontSize: '18.5px', color: 'var(--color-cream)' }}>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Risus velit id porttitor turpis risus lectus sagittis nisl luctus varius et eget nascetur lorem in tortor at risus. Condimentum metus purus interdum natoque imperdiet adipiscing sodales ultrices imperdiet vehicula semper ante vivamus lectus inceptos nostra magna imperdiet.
+                </p>
+                <p>
+                  Netus tincidunt ullamcorper elementum scelerisque turpis vivamus lacus quam nunc aliquet vel torquent cum duis tempus cras arcu laoreet. Sapien mus sollicitudin natoque gravida quis platea faucibus lacinia ipsum magnis dictum curabitur ullamcorper odio leo elementum facilisi nisl.
+                </p>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -470,7 +500,7 @@ function RevealStage({ mask, onReset }) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex items-center justify-center bg-white/[0.02] overflow-hidden group relative"
+          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex items-center justify-center bg-white/[0.02] overflow-hidden group relative sticky top-0 h-150 max-h-[100dvh]"
         >
           {/* Gallery-style Corner Markers */}
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary transition-all duration-500" />
@@ -481,7 +511,7 @@ function RevealStage({ mask, onReset }) {
           <motion.img
             src={mask.image_url}
             alt={mask.name}
-            className="w-full h-full object-contain relative z-10 scale-110"
+            className="w-full h-full object-contain relative z-10 scale-150"
             style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
           />
         </motion.div>
@@ -490,9 +520,8 @@ function RevealStage({ mask, onReset }) {
       {/* ── MAIN BODY — 2 COLUMN ASYMMETRIC GRID ───────────────── */}
       <div className="w-full flex flex-col lg:flex-row min-h-[70vh]">
 
-        {/* LEFT COLUMN — Story (≈65%) */}
+        {/* LEFT COLUMN — Negative Space & Watermark */}
         <div className="flex-1 lg:flex-[65] flex flex-col justify-start px-8 md:px-16 py-16 relative overflow-hidden">
-
           {/* Background TUONG watermark — strictly behind */}
           <span
             aria-hidden="true"
@@ -502,36 +531,10 @@ function RevealStage({ mask, onReset }) {
             TUONG
           </span>
 
-          {/* Story paragraph — right-tensioned within left column */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative z-10 ml-auto mr-0 lg:mr-12"
-            style={{ maxWidth: '492px' }}
-          >
-            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-secondary/60 mb-6 flex items-center gap-2">
-              <span className="w-2 h-2 bg-secondary animate-pulse" />
-              STORY_LOG / {mask.id?.toString().padStart(3, '0')}
-            </p>
-            <p
-              className="text-tertiary font-medium leading-[1.6]"
-              style={{ fontSize: '18.5px', color: 'var(--color-cream)' }}
-            >
-              {mask.description || `A legendary artifact from the Tuong heritage. Classified under ${mask.category || 'Unknown Archetype'}, this mask carries the spirit of ancient Vietnamese stage performances. Its origins date back centuries, symbolizing distinct virtues — courage, intellect, and ferocity — alive in every performance.`}
-            </p>
-
-            {/* Actions */}
-            <div className="mt-12 flex items-center gap-6">
-              <button
-                onClick={onReset}
-                className="group relative px-8 py-3 border border-tertiary/10 text-[10px] font-bold uppercase tracking-[0.4em] text-tertiary/40 hover:border-secondary hover:text-secondary transition-all duration-500 cursor-pointer overflow-hidden"
-              >
-                <span className="relative z-10">&gt;_ RESET SEQUENCE</span>
-                <div className="absolute inset-0 bg-secondary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-              </button>
-            </div>
-          </motion.div>
+          <div className="flex-1" />
+          <div className="relative z-10 mt-auto">
+            <p className="text-[9px] font-mono text-tertiary/10 uppercase tracking-[0.4em]">END_OF_LOG</p>
+          </div>
         </div>
 
         {/* RIGHT COLUMN — Stats (max 566px) */}
