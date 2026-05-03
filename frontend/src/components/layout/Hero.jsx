@@ -25,22 +25,16 @@ export default function Hero() {
   const mouseXOffset = useMotionValue(0);
   const mouseYOffset = useMotionValue(0);
 
-  const pupilX = useTransform(mouseXOffset, [-1, 1], [-12, 12]); 
-  const pupilY = useTransform(mouseYOffset, [-1, 1], [-12, 4]);
+  const pupilX = useTransform(mouseXOffset, [-1, 0, 1], [-22, 0, 12]); 
+  const pupilY = useTransform(mouseYOffset, [-1, 0, 1], [-12, 0, 8]);
 
   const springConfig = { stiffness: 300, damping: 30 };
   const pupilXSpring = useSpring(pupilX, springConfig);
   const pupilYSpring = useSpring(pupilY, springConfig);
 
   const handleMouseMove = (e) => {
-    if (!maskContainerRef.current) return;
-
-    const { left, top, width, height } = maskContainerRef.current.getBoundingClientRect();
-    const maskCenterX = left + width / 2;
-    const maskCenterY = top + height / 2;
-
-    const xOffset = (e.clientX - maskCenterX) / (window.innerWidth / 2);
-    const yOffset = (e.clientY - maskCenterY) / (window.innerHeight / 2);
+    const xOffset = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+    const yOffset = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
 
     mouseXOffset.set(xOffset);
     mouseYOffset.set(yOffset);
@@ -59,7 +53,7 @@ export default function Hero() {
         {...fadeIn(0.1)}
         className="absolute top-0 left-0 right-0 flex justify-between items-center px-6 py-3 text-xs tracking-widest text-tertiary/30 font-mono border-b border-inverse/20 z-20"
       >
-        <span>16.0479° N / 108.2208° E</span>
+        <span></span>
         <span className="text-secondary/60">[ EXHIBITION — ACTIVE ]</span>
         <span>VIETNAM</span>
       </motion.div>

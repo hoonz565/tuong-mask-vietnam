@@ -152,9 +152,6 @@ export default function GalleryFooter({ masks = [] }) {
             <path d="M1 10V13H4" stroke="#ff1919" strokeWidth="1.2" />
             <path d="M10 13H13V10" stroke="#ff1919" strokeWidth="1.2" />
           </svg>
-          <span className="text-[10px] font-mono tracking-[0.3em] text-white/50 uppercase">
-            16.0479 N&nbsp;&nbsp;108.2208 E
-          </span>
         </div>
         <span className="text-[10px] font-mono tracking-[0.3em] text-white/50 uppercase">VIETNAM</span>
       </div>
