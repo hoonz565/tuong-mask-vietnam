@@ -371,17 +371,26 @@ function LoadingStage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="flex flex-col items-center justify-center w-full max-w-lg mx-auto py-12 font-mono">
-      <div className="w-full border border-secondary/20 bg-black/60 p-4 mb-6 text-left">
+      className="flex flex-col items-center justify-center w-full max-w-3xl mx-auto py-24 font-mono">
+      <div className="relative w-full min-h-[320px] border border-secondary/30 bg-black/80 p-8 mb-8 text-left shadow-[0_0_30px_rgba(255,25,25,0.1)]">
+        {/* Corner brackets */}
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary/60" />
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary/60" />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary/60" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary/60" />
+
         {lines.slice(0, line + 1).map((l, i) => (
-          <motion.p key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-[11px] text-secondary/80 leading-relaxed">{l}</motion.p>
+          <motion.p key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-base md:text-lg font-bold tracking-wider text-secondary/90 mb-3">{l}</motion.p>
         ))}
-        <p className="text-[11px] text-tertiary/30 mt-1">{hex}</p>
+        <p className="text-base md:text-lg text-tertiary/40 mt-4">{hex}</p>
+
+        {/* Blinking cursor */}
+        <motion.div animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} className="absolute bottom-8 right-8 text-secondary font-bold text-xl">_</motion.div>
       </div>
-      <div className="w-full h-1 bg-white/5 border border-white/10 overflow-hidden">
-        <motion.div className="h-full bg-secondary" style={{ width: `${progress}%` }} />
+      <div className="w-full h-2 bg-white/5 border border-white/10 overflow-hidden relative">
+        <motion.div className="absolute top-0 left-0 h-full bg-secondary shadow-[0_0_15px_rgba(255,25,25,0.8)]" style={{ width: `${progress}%` }} />
       </div>
-      <span className="text-[10px] text-secondary/60 mt-2 font-mono tabular-nums">{Math.round(progress)}%</span>
+      <span className="text-sm md:text-base font-bold tracking-widest text-secondary mt-4 uppercase tabular-nums">{Math.round(progress)}%</span>
     </motion.div>
   );
 }
