@@ -411,149 +411,133 @@ function RevealStage({ mask, onReset }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="w-full bg-black"
+      className="w-full bg-black relative"
     >
-      {/* ── HEADER — BRANDING & IDENTITY (Aligned with 65/35 Grid) ───────────────────────── */}
-      <div className="w-full flex flex-col lg:flex-row items-start min-h-screen">
-        {/* Left Branding Area (65%) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex-1 lg:flex-[65] pl-8 md:pl-16 pr-0 pt-0 pb-0 flex flex-col"
-        >
-          {/* THE STORY BEHIND - Boxed (Equal width, flush right) */}
-          <div className="relative w-full px-8 py-4 border-b border-secondary/10 bg-white/[0.01]">
-            {/* Corner Markers (Red) */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
-
-            <h2 className="font-black uppercase leading-none text-secondary text-left"
-              style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
-            >
-              THE STORY BEHIND
-            </h2>
-          </div>
-
-          {/* Mask Name - Boxed (Equal width, flush right) */}
-          <div className="relative w-full px-8 py-4 border-b border-tertiary/10 bg-white/[0.02]">
-            {/* Corner Markers (Red) */}
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
-            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
-            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
-
-            <h3 className="font-black uppercase leading-none text-tertiary text-left"
-              style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
-            >
-              {mask.name || mask.category}
-            </h3>
-          </div>
-
-          {/* BUTTON & STORY ALIGNMENT ROW — DOCKED TOP & RIGHT */}
-          <div className="w-full flex flex-row items-start justify-between pt-0 pr-0">
-            {/* EXIT BUTTON (Left Aligned) */}
-            <div className="pt-12 pl-0">
-              <button
-                onClick={onReset}
-                className="group w-20 h-20 flex-shrink-0 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
-              >
-                <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-                <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-                <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-              </button>
-            </div>
-
-            {/* Story paragraph — docked to top-right corner of column */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative z-10 w-[450px] p-8 border-l border-b border-secondary/10 bg-white/[0.01]"
-            >
-              {/* Corner Markers (Red) */}
+      <div className="w-full flex flex-col lg:flex-row items-start min-h-screen relative">
+        
+        {/* ── LEFT COLUMN (65%) ───────────────────────── */}
+        <div className="flex-1 lg:flex-[65] flex flex-col min-h-screen relative overflow-hidden">
+          
+          {/* Branding Area */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full pl-8 md:pl-16 pr-0 pt-0 pb-0 flex flex-col"
+          >
+            {/* THE STORY BEHIND */}
+            <div className="relative w-full px-8 py-4 border-b border-secondary/10 bg-white/[0.01]">
               <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
               <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
               <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+              <h2 className="font-black uppercase leading-none text-secondary text-left"
+                style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
+              >
+                THE STORY BEHIND
+              </h2>
+            </div>
 
-              <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-secondary/60 mb-6 flex items-center gap-2">
-                <span className="w-2 h-2 bg-secondary animate-pulse" />
-                STORY_LOG / {mask.id?.toString().padStart(3, '0')}
-              </p>
-              <div className="space-y-6 text-tertiary font-medium leading-[1.6]" style={{ fontSize: '18.5px', color: 'var(--color-cream)' }}>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Risus velit id porttitor turpis risus lectus sagittis nisl luctus varius et eget nascetur lorem in tortor at risus. Condimentum metus purus interdum natoque imperdiet adipiscing sodales ultrices imperdiet vehicula semper ante vivamus lectus inceptos nostra magna imperdiet.
-                </p>
-                <p>
-                  Netus tincidunt ullamcorper elementum scelerisque turpis vivamus lacus quam nunc aliquet vel torquent cum duis tempus cras arcu laoreet. Sapien mus sollicitudin natoque gravida quis platea faucibus lacinia ipsum magnis dictum curabitur ullamcorper odio leo elementum facilisi nisl.
-                </p>
+            {/* Mask Name */}
+            <div className="relative w-full px-8 py-4 border-b border-tertiary/10 bg-white/[0.02]">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+              <h3 className="font-black uppercase leading-none text-tertiary text-left"
+                style={{ fontSize: 'clamp(2.4rem, 6vw, 4.8rem)', letterSpacing: '-0.03em' }}
+              >
+                {mask.name || mask.category}
+              </h3>
+            </div>
+
+            {/* BUTTON & STORY ALIGNMENT ROW */}
+            <div className="w-full flex flex-row items-start justify-between pt-0 pr-0">
+              <div className="pt-12 pl-0">
+                <button
+                  onClick={onReset}
+                  className="group w-20 h-20 flex-shrink-0 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
+                >
+                  <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+                  <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+                  <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+                </button>
               </div>
-            </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative z-10 w-[450px] p-8 border-l border-b border-secondary/10 bg-white/[0.01]"
+              >
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary" />
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary" />
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary" />
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary" />
+
+                <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-secondary/60 mb-6 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-secondary animate-pulse" />
+                  STORY_LOG / {mask.id?.toString().padStart(3, '0')}
+                </p>
+                <div className="space-y-6 text-tertiary font-medium leading-[1.6]" style={{ fontSize: '18.5px', color: 'var(--color-cream)' }}>
+                  <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Risus velit id porttitor turpis risus lectus sagittis nisl luctus varius et eget nascetur lorem in tortor at risus. Condimentum metus purus interdum natoque imperdiet adipiscing sodales ultrices imperdiet vehicula semper ante vivamus lectus inceptos nostra magna imperdiet.
+                  </p>
+                  <p>
+                    Netus tincidunt ullamcorper elementum scelerisque turpis vivamus lacus quam nunc aliquet vel torquent cum duis tempus cras arcu laoreet. Sapien mus sollicitudin natoque gravida quis platea faucibus lacinia ipsum magnis dictum curabitur ullamcorper odio leo elementum facilisi nisl.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Watermark & End of Log Area */}
+          <div className="flex-1 flex flex-col justify-end px-8 md:px-16 pb-16 relative mt-16">
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-8 -left-4 select-none pointer-events-none font-black uppercase leading-none text-white/[0.02] z-0"
+              style={{ fontSize: 'clamp(8rem, 25vw, 20rem)', letterSpacing: '-0.06em', lineHeight: 0.8 }}
+            >
+              TUONG
+            </span>
+            <div className="relative z-10 mt-auto">
+              <p className="text-[9px] font-mono text-tertiary/10 uppercase tracking-[0.4em]">END_OF_LOG</p>
+            </div>
           </div>
-        </motion.div>
 
-        {/* Right Media Area (35% — Aligned with Stats) */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex items-center justify-center bg-white/[0.02] overflow-hidden group relative sticky top-0 h-150 max-h-[100dvh]"
-        >
-          {/* Gallery-style Corner Markers */}
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary transition-all duration-500" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary transition-all duration-500" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary transition-all duration-500" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary transition-all duration-500" />
-
-          <motion.img
-            src={mask.image_url}
-            alt={mask.name}
-            className="w-full h-full object-contain relative z-10 scale-150"
-            style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
-          />
-        </motion.div>
-      </div>
-
-      {/* ── MAIN BODY — 2 COLUMN ASYMMETRIC GRID ───────────────── */}
-      <div className="w-full flex flex-col lg:flex-row min-h-[70vh]">
-
-        {/* LEFT COLUMN — Negative Space & Watermark */}
-        <div className="flex-1 lg:flex-[65] flex flex-col justify-start px-8 md:px-16 py-16 relative overflow-hidden">
-          {/* Background TUONG watermark — strictly behind */}
-          <span
-            aria-hidden="true"
-            className="absolute -bottom-8 -left-4 select-none pointer-events-none font-black uppercase leading-none text-white/[0.02] z-0"
-            style={{ fontSize: 'clamp(8rem, 25vw, 20rem)', letterSpacing: '-0.06em', lineHeight: 0.8 }}
-          >
-            TUONG
-          </span>
-
-          <div className="flex-1" />
-          <div className="relative z-10 mt-auto">
-            <p className="text-[9px] font-mono text-tertiary/10 uppercase tracking-[0.4em]">END_OF_LOG</p>
-          </div>
         </div>
 
-        {/* RIGHT COLUMN — Stats (max 566px) */}
+        {/* ── RIGHT COLUMN (35%) ───────────────────────── */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="lg:flex-[35] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col bg-black/10"
-          style={{ maxWidth: '566px' }}
+          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] flex flex-col justify-start sticky top-0 h-screen bg-black/10"
         >
-          {/* Stats container */}
-          <div className="flex-1 flex flex-col">
+          {/* MASK CONTAINER */}
+          <div className="relative w-full border-b border-white/10 flex items-center justify-center bg-white/[0.02] overflow-hidden group py-12 px-8">
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary transition-all duration-500" />
+            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary transition-all duration-500" />
+            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary transition-all duration-500" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary transition-all duration-500" />
+
+            <motion.img
+              src={mask.image_url}
+              alt={mask.name}
+              className="w-full object-contain relative z-10 max-h-[45vh]"
+              style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
+            />
+          </div>
+
+          {/* STATS CONTAINER */}
+          <div className="w-full flex flex-col mt-0">
             <div className="px-[18.5px] py-4 bg-white/[0.03] border-b border-white/5">
               <p className="text-[9px] font-mono uppercase tracking-[0.5em] text-secondary">
                 ARCHETYPE_PARAMETERS
               </p>
             </div>
 
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               {Object.entries(stats).map(([name, val]) => {
                 const filled = Math.round(val / 10);
                 const statLabels = {
@@ -568,7 +552,6 @@ function RevealStage({ mask, onReset }) {
                     className="border-b border-white/5 last:border-b-0 group hover:bg-white/[0.01] transition-colors"
                     style={{ padding: '13.8px 18.5px' }}
                   >
-                    {/* Stat label row */}
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/50 group-hover:text-tertiary/80 transition-colors">
                         {name}
@@ -578,7 +561,6 @@ function RevealStage({ mask, onReset }) {
                       </span>
                     </div>
 
-                    {/* Segmented bar — 10 blocks */}
                     <div className="flex gap-[4px] h-[4px]">
                       {[...Array(10)].map((_, i) => (
                         <div
@@ -591,7 +573,6 @@ function RevealStage({ mask, onReset }) {
                       ))}
                     </div>
 
-                    {/* Meta info */}
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-[8px] font-mono text-tertiary/10 uppercase tracking-tighter">LVL_QUANTUM</span>
                       <span className="text-[10px] font-mono text-tertiary/20 tabular-nums">{val}%</span>
@@ -602,7 +583,7 @@ function RevealStage({ mask, onReset }) {
             </div>
 
             {/* Bottom meta bar */}
-            <div className="mt-auto px-[18.5px] py-4 border-t border-white/5 flex items-center justify-between">
+            <div className="px-[18.5px] py-4 border-t border-white/5 flex items-center justify-between w-full">
               <span className="text-[8px] font-mono text-tertiary/10 uppercase tracking-[0.3em]">REVEAL_SYSTEM_ACTIVE</span>
               <div className="flex gap-1">
                 <div className="w-1 h-1 bg-secondary rounded-full animate-ping" />
