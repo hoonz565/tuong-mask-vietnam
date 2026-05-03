@@ -170,9 +170,9 @@ function RadarChart({ stats }) {
       {/* ── LAYER 3: Vertex Labels ───────────────────── */}
 
       <text x={cx} y={14} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">STRENGTH</tspan></text>
-      <text x={size - 8} y={cy + 5} textAnchor="end"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
+      <text x={size - 8} y={cy - 8} textAnchor="end"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">INTELLECT</tspan></text>
       <text x={cx} y={size - 8} textAnchor="middle"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">FEROCITY</tspan></text>
-      <text x={8} y={cy + 5} textAnchor="start"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">SPIRIT</tspan></text>
+      <text x={8} y={cy - 8} textAnchor="start"><tspan className="fill-tertiary/50 text-[11px] font-bold uppercase tracking-wider">SPIRIT</tspan></text>
     </svg>
   );
 }
@@ -305,11 +305,13 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
             <RadarChart stats={stats} />
 
             {/* Action bar */}
-            <div className="flex items-center justify-between w-full mt-6 gap-4">
-              <button onClick={randomize}
-                className="text-sm font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-4 py-3">
-                Random Selection
-              </button>
+            <div className="relative flex items-center justify-center w-full mt-6 h-14">
+              <div className="absolute left-0">
+                <button onClick={randomize}
+                  className="text-sm font-bold uppercase tracking-[0.2em] text-tertiary/50 hover:text-secondary transition-colors cursor-pointer px-4 py-3">
+                  Random Selection
+                </button>
+              </div>
               <motion.button onClick={() => onExecute(stats)}
                 animate={{ boxShadow: ['0 0 8px rgba(255,25,25,0.2)', '0 0 18px rgba(255,25,25,0.4)', '0 0 8px rgba(255,25,25,0.2)'] }}
                 transition={{ repeat: Infinity, duration: 2 }}
