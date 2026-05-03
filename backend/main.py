@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import sqlite3
 import math
@@ -20,8 +19,8 @@ app.add_middleware(
 DB_PATH = os.path.join(os.path.dirname(__file__), 'masks.db')
 
 # Ensure static/images directory exists
-os.makedirs(os.path.join(os.path.dirname(__file__), 'static', 'images'), exist_ok=True)
-app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'static')), name="static")
+# os.makedirs(os.path.join(os.path.dirname(__file__), 'static', 'images'), exist_ok=True)
+# app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'static')), name="static")
 
 
 def get_connection():
