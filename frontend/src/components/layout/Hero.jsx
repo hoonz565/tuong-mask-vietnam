@@ -199,7 +199,7 @@ export default function Hero() {
 
             {/* Mask Image */}
             <motion.img
-              src="http://localhost:8000/static/images/watcher.png?v=1"
+              src="/static/images/watcher.png?v=1"
               alt="Surveillance Mask"
               className="w-full h-auto pointer-events-none relative z-10"
               initial={{ opacity: 0, scale: 0.9 }}

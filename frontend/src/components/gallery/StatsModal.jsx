@@ -40,7 +40,7 @@ export default function StatsModal({ selectedMask, setSelectedMask }) {
                 src={selectedMask.image_url} 
                 alt={selectedMask.name}
                 className="w-full h-full max-h-[60vh] object-contain relative z-10"
-                onError={(e) => { e.target.src = 'http://localhost:8000/static/images/placeholder.png'; }}
+                onError={(e) => { e.target.src = '/static/images/placeholder.png'; }}
               />
             </div>
 
