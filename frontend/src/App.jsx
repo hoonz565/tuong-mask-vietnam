@@ -38,7 +38,7 @@ function App() {
       <MaskGallery masks={masks} loading={loading} error={error} />
       
       {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
-      <div id="discover-section" className="w-full mt-16 relative z-10">
+      <div id="discover-section" className="w-full mt-16 relative z-10 px-6 md:px-12">
         <DiscoverMask />
       </div>
 
