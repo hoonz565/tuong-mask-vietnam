@@ -229,7 +229,7 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
               className="flex flex-col items-center gap-0 w-full px-6 text-center"
             >
               {/* Label — small monospaced tag */}
-              <span className="font-mono text-sm font-bold tracking-[0.6em] uppercase text-secondary mb-6">
+              <span className="font-mono text-xl font-bold tracking-[0.6em] uppercase text-secondary mb-6">
                 — DISCOVER —
               </span>
 
