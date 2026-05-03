@@ -60,10 +60,19 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                 <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-tertiary/40 group-hover:w-1/2 group-hover:h-1/2 group-hover:border-secondary transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]" />
 
                 <img
-                  src={mask.image_url}
+                  src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
                   alt={mask.name}
-                  className={`w-full h-full object-contain transition-all duration-300 ${selectedMask.id === mask.id ? 'scale-110' : 'scale-100 group-hover:scale-110'}`}
-                  onError={(e) => { e.target.src = `/static/images/placeholder.png`; }}
+                  className={`w-full h-full object-contain transition-all duration-300 ${selectedMask.id === mask.id ? 'scale-110' : 'scale-100 group-hover:scale-110'
+                    }`}
+                  onError={(e) => {
+                    const fileName = mask.image_url.split('/').pop();
+                    const localPath = `/static/images/${fileName}`;
+                    if (e.target.src !== window.location.origin + localPath) {
+                      e.target.src = localPath;
+                    } else {
+                      e.target.src = '/static/images/placeholder.png';
+                    }
+                  }}
                 />
               </button>
             ))}

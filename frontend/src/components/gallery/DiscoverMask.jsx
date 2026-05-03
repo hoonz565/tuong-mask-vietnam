@@ -518,10 +518,19 @@ function RevealStage({ mask, onReset }) {
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary transition-all duration-500" />
 
             <motion.img
-              src={mask.image_url}
+              src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
               alt={mask.name}
               className="w-full object-contain relative z-10 max-h-[45vh]"
               style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
+              onError={(e) => {
+                const fileName = mask.image_url.split('/').pop();
+                const localPath = `/static/images/${fileName}`;
+                if (e.target.src !== window.location.origin + localPath) {
+                  e.target.src = localPath;
+                } else {
+                  e.target.src = '/static/images/placeholder.png';
+                }
+              }}
             />
           </div>
 

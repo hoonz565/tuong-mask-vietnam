@@ -108,11 +108,20 @@ function MaskMarquee({ masks }) {
               transition={{ type: 'spring', stiffness: 400, damping: 22 }}
             >
               <img
-                src={mask.image_url}
+                src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
                 alt={mask.name}
                 className="object-contain select-none h-full w-full"
                 draggable={false}
                 style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}
+                onError={(e) => {
+                  const fileName = mask.image_url.split('/').pop();
+                  const localPath = `/static/images/${fileName}`;
+                  if (e.target.src !== window.location.origin + localPath) {
+                    e.target.src = localPath;
+                  } else {
+                    e.target.src = '/static/images/placeholder.png';
+                  }
+                }}
               />
             </motion.div>
 
