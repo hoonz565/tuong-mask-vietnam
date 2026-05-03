@@ -35,10 +35,18 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
             key={selectedMask.id}
             initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
             animate={{ opacity: 1, scale: 1.3, filter: 'blur(0px)' }}
-            src={selectedMask.image_url}
+            src={selectedMask.image_url.startsWith('/') ? selectedMask.image_url : `/${selectedMask.image_url}`}
             alt={selectedMask.name}
             className="w-full h-full object-contain relative z-10"
-            onError={(e) => { e.target.src = `/static/images/placeholder.png`; }}
+            onError={(e) => {
+              const fileName = selectedMask.image_url.split('/').pop();
+              const localPath = `/static/images/${fileName}`;
+              if (e.target.src !== window.location.origin + localPath) {
+                e.target.src = localPath;
+              } else {
+                e.target.src = '/static/images/placeholder.png';
+              }
+            }}
           />
         </div>
       </div>
