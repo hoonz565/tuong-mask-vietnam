@@ -45,7 +45,7 @@ export default function Hero() {
       ref={heroRef}
       onMouseMove={handleMouseMove}
       aria-label="Hero — Vietnamese Tuong Masks"
-      className="relative w-full overflow-hidden border-b border-inverse/40"
+      className="relative z-20 w-full overflow-hidden border-b border-inverse/40"
       style={{ minHeight: '88vh' }}
     >
       {/* ── Tech data bar ── */}

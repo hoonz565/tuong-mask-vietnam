@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Scan } from 'lucide-react';
 import { API_BASE } from '../../api/client';
 
 export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      // Scroll to the top of the container, minus a 60px header/padding buffer
+      const topOffset = containerRef.current.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top: topOffset, behavior: 'smooth' });
+    }
+  }, [selectedMask]);
+
   if (!selectedMask) return null;
 
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}

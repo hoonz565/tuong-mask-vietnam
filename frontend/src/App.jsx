@@ -4,6 +4,7 @@ import BackgroundText from './components/layout/BackgroundText';
 import Header from './components/layout/Header';
 import Hero from './components/layout/Hero';
 import MaskGallery from './components/gallery/MaskGallery';
+import DiscoverMask from './components/gallery/DiscoverMask';
 import GalleryFooter from './components/layout/GalleryFooter';
 import { getAllMasks } from './api/maskService';
 
@@ -36,6 +37,11 @@ function App() {
       {/* Main Mask Gallery */}
       <MaskGallery masks={masks} loading={loading} error={error} />
       
+      {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
+      <div id="discover-section" className="w-full mt-16 relative z-10">
+        <DiscoverMask />
+      </div>
+
       {/* Footer */}
       <GalleryFooter masks={masks} />
     </div>

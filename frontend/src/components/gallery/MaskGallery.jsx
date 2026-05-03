@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GridView from './GridView';
 import DetailedView from './DetailedView';
-import DiscoverMask from './DiscoverMask';
 import GalleryToolbar from '../layout/GalleryToolbar';
 
 export default function MaskGallery({ masks, loading, error }) {
@@ -78,12 +77,6 @@ export default function MaskGallery({ masks, loading, error }) {
         )}
       </AnimatePresence>
 
-      {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
-      {!selectedMask && (
-        <div id="discover-section" className="w-full mt-16">
-          <DiscoverMask />
-        </div>
-      )}
     </div>
   );
 }
