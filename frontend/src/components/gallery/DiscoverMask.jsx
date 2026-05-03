@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { matchMask } from '../../api/maskService';
 const TOTAL_POINTS = 200;
 const MIN_STAT = 10;
@@ -179,7 +180,7 @@ function RadarChart({ stats }) {
 /* ═══════════════════════════════════════════════════════════════════
    STAGE 1: HUD ADJUSTMENT DASHBOARD
    ═══════════════════════════════════════════════════════════════════ */
-function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
+function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
   const [stats, setStats] = useState(defaultStats);
   const spent = usedPoints(stats);
   const remaining = TOTAL_POINTS - spent;
@@ -209,6 +210,23 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
 
   return (
     <div className="relative w-full overflow-hidden">
+      {/* ── EXIT BUTTON (Only visible when unlocked) ── */}
+      <AnimatePresence>
+        {isUnlocked && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={onExit}
+            className="group absolute top-8 right-8 z-[60] w-12 h-12 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-surface/80 backdrop-blur-sm"
+          >
+            <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-tertiary/40 group-hover:border-secondary transition-colors" />
+            <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-tertiary/40 group-hover:border-secondary transition-colors" />
+            <X size={20} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* ── GATE / LOCK OVERLAY ───────────────── */}
       <AnimatePresence>
         {!isUnlocked && (
@@ -268,8 +286,8 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
       </AnimatePresence>
 
       {/* ── BACKGROUND DASHBOARD ─────────────── */}
-      <motion.div 
-        animate={{ 
+      <motion.div
+        animate={{
           filter: isUnlocked ? 'blur(0px) brightness(1)' : 'blur(12px) brightness(0.5)',
           pointerEvents: isUnlocked ? 'auto' : 'none'
         }}
@@ -387,63 +405,189 @@ function LoadingStage() {
 function RevealStage({ mask, onReset }) {
   if (!mask) return null;
   const stats = mask.stats || {};
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="flex flex-col items-center w-full max-w-2xl mx-auto">
-      <motion.span initial={{ opacity: 0, y: 20, letterSpacing: '0.6em' }} animate={{ opacity: 1, y: 0, letterSpacing: '0.3em' }}
-        transition={{ duration: 0.6 }} className="text-[11px] font-bold text-secondary uppercase tracking-[0.3em] mb-2">
-        {mask.category || 'UNKNOWN ARCHETYPE'}
-      </motion.span>
-      <motion.h2 initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-5xl md:text-7xl font-bold uppercase tracking-tighter text-tertiary leading-[0.85] text-center mb-8">
-        {mask.name}
-      </motion.h2>
-      <motion.div initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.4, type: 'spring', stiffness: 100 }}
-        className="relative w-48 h-48 md:w-64 md:h-64 mb-8">
-        <div className="absolute inset-0 border border-secondary/20">
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary/50" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary/50" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full bg-black"
+    >
+      {/* ── HEADER — BRANDING & IDENTITY (Aligned with 65/35 Grid) ───────────────────────── */}
+      <div className="w-full border-b border-white/10 flex flex-col lg:flex-row items-stretch">
+        {/* Left Branding Area (65%) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex-1 lg:flex-[65] px-8 md:px-16 pt-12 pb-12 flex flex-col"
+        >
+          <p className="text-[10px] font-mono uppercase tracking-[0.5em] text-tertiary/20 mb-4">
+            IDENTITY_VERIFICATION / SUCCESS
+          </p>
+          <h2 className="font-black uppercase leading-[0.8] text-secondary"
+            style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', letterSpacing: '-0.03em' }}
+          >
+            THE STORY BEHIND<br />
+            <span className="text-tertiary block mt-6">{mask.name || mask.category}</span>
+          </h2>
+
+          {/* EXIT BUTTON */}
+          <div className="mt-12">
+            <button
+              onClick={onReset}
+              className="group w-20 h-20 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
+            >
+              <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+              <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
+              <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Right Media Area (35% — Aligned with Stats) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="lg:flex-[35] border-l border-white/10 w-full lg:max-w-[566px] aspect-square lg:aspect-auto flex items-center justify-center bg-white/[0.02] overflow-hidden group relative"
+        >
+          {/* Gallery-style Corner Markers */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-secondary transition-all duration-500" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-secondary transition-all duration-500" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary transition-all duration-500" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary transition-all duration-500" />
+
+          <motion.img
+            src={mask.image_url}
+            alt={mask.name}
+            className="w-full h-full object-contain relative z-10 scale-150"
+            style={{ filter: 'drop-shadow(0 20px 40px rgba(255,25,25,0.25))' }}
+          />
+        </motion.div>
+      </div>
+
+      {/* ── MAIN BODY — 2 COLUMN ASYMMETRIC GRID ───────────────── */}
+      <div className="w-full flex flex-col lg:flex-row min-h-[70vh]">
+
+        {/* LEFT COLUMN — Story (≈65%) */}
+        <div className="flex-1 lg:flex-[65] flex flex-col justify-start px-8 md:px-16 py-16 relative overflow-hidden">
+
+          {/* Background TUONG watermark — strictly behind */}
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-8 -left-4 select-none pointer-events-none font-black uppercase leading-none text-white/[0.02] z-0"
+            style={{ fontSize: 'clamp(8rem, 25vw, 20rem)', letterSpacing: '-0.06em', lineHeight: 0.8 }}
+          >
+            TUONG
+          </span>
+
+          {/* Story paragraph — right-tensioned within left column */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative z-10 ml-auto mr-0 lg:mr-12"
+            style={{ maxWidth: '492px' }}
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-secondary/60 mb-6 flex items-center gap-2">
+              <span className="w-2 h-2 bg-secondary animate-pulse" />
+              STORY_LOG / {mask.id?.toString().padStart(3, '0')}
+            </p>
+            <p
+              className="text-tertiary font-medium leading-[1.6]"
+              style={{ fontSize: '18.5px', color: 'var(--color-cream)' }}
+            >
+              {mask.description || `A legendary artifact from the Tuong heritage. Classified under ${mask.category || 'Unknown Archetype'}, this mask carries the spirit of ancient Vietnamese stage performances. Its origins date back centuries, symbolizing distinct virtues — courage, intellect, and ferocity — alive in every performance.`}
+            </p>
+
+            {/* Actions */}
+            <div className="mt-12 flex items-center gap-6">
+              <button
+                onClick={onReset}
+                className="group relative px-8 py-3 border border-tertiary/10 text-[10px] font-bold uppercase tracking-[0.4em] text-tertiary/40 hover:border-secondary hover:text-secondary transition-all duration-500 cursor-pointer overflow-hidden"
+              >
+                <span className="relative z-10">&gt;_ RESET SEQUENCE</span>
+                <div className="absolute inset-0 bg-secondary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+              </button>
+            </div>
+          </motion.div>
         </div>
-        <motion.img src={mask.image_url} alt={mask.name} className="w-full h-full object-contain p-4"
-          animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          style={{ filter: 'drop-shadow(0 8px 24px rgba(255,25,25,0.3))' }} />
-      </motion.div>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-        className="w-full border-t border-tertiary/10 pt-6">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-tertiary/30 mb-4">PROFILE STATS</p>
-        <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-          {Object.entries(stats).map(([name, val]) => {
-            const segs = Math.round(val / 10);
-            return (
-              <div key={name} className="flex flex-col">
-                <div className="flex justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-tertiary/40">{name}</span>
-                  <span className="text-[10px] font-mono text-tertiary/30">{val}</span>
-                </div>
-                <div className="flex w-full gap-1">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className={`h-[3px] flex-1 transition-all duration-500 ${i < segs ? 'bg-secondary shadow-[0_0_8px_rgba(255,25,25,0.4)]' : 'bg-white/10'}`} />
-                  ))}
-                </div>
+
+        {/* RIGHT COLUMN — Stats (max 566px) */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="lg:flex-[35] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col bg-black/10"
+          style={{ maxWidth: '566px' }}
+        >
+          {/* Stats container */}
+          <div className="flex-1 flex flex-col">
+            <div className="px-[18.5px] py-4 bg-white/[0.03] border-b border-white/5">
+              <p className="text-[9px] font-mono uppercase tracking-[0.5em] text-secondary">
+                ARCHETYPE_PARAMETERS
+              </p>
+            </div>
+
+            <div className="flex-1">
+              {Object.entries(stats).map(([name, val]) => {
+                const filled = Math.round(val / 10);
+                const statLabels = {
+                  strength: 'SỨC MẠNH',
+                  intellect: 'TRÍ TUỆ',
+                  spirit: 'TINH THẦN',
+                  ferocity: 'HUNG TÀN',
+                };
+                return (
+                  <div
+                    key={name}
+                    className="border-b border-white/5 last:border-b-0 group hover:bg-white/[0.01] transition-colors"
+                    style={{ padding: '13.8px 18.5px' }}
+                  >
+                    {/* Stat label row */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/50 group-hover:text-tertiary/80 transition-colors">
+                        {name}
+                      </span>
+                      <span className="text-[10px] font-mono text-secondary/80 uppercase">
+                        {statLabels[name] || name}
+                      </span>
+                    </div>
+
+                    {/* Segmented bar — 10 blocks */}
+                    <div className="flex gap-[4px] h-[4px]">
+                      {[...Array(10)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-full flex-1 transition-all duration-700 delay-[${i * 50}ms] ${i < filled
+                            ? 'bg-secondary shadow-[0_0_8px_rgba(255,25,25,0.3)]'
+                            : 'bg-white/5'
+                            }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Meta info */}
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-[8px] font-mono text-tertiary/10 uppercase tracking-tighter">LVL_QUANTUM</span>
+                      <span className="text-[10px] font-mono text-tertiary/20 tabular-nums">{val}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom meta bar */}
+            <div className="mt-auto px-[18.5px] py-4 border-t border-white/5 flex items-center justify-between">
+              <span className="text-[8px] font-mono text-tertiary/10 uppercase tracking-[0.3em]">REVEAL_SYSTEM_ACTIVE</span>
+              <div className="flex gap-1">
+                <div className="w-1 h-1 bg-secondary rounded-full animate-ping" />
+                <div className="w-1 h-1 bg-secondary rounded-full" />
               </div>
-            );
-          })}
-        </div>
-      </motion.div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
-        className="w-full mt-6 pt-6 border-t border-tertiary/5">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-tertiary/30 mb-3">STORY BEHIND {mask.name?.toUpperCase()}</p>
-        <p className="text-sm text-tertiary/70 leading-relaxed">
-          A legendary artifact from the Tuong heritage. Classified under {mask.category || 'Unknown'}, this mask carries the spirit of ancient performances.
-        </p>
-      </motion.div>
-      <button onClick={onReset} className="mt-8 px-6 py-2 border border-tertiary/20 text-[11px] font-bold uppercase tracking-[0.3em] text-tertiary/60 hover:border-secondary hover:text-secondary transition-colors cursor-pointer">
-        Reset
-      </button>
-      <div className="w-full mt-8 pt-4 border-t border-tertiary/5 flex justify-between text-[9px] font-mono text-tertiary/15 uppercase tracking-widest">
-        <span>ID: {mask.id}</span><span>DISCOVER_SYSTEM_V.1.0</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );
@@ -456,6 +600,12 @@ export default function DiscoverMask() {
   const [stage, setStage] = useState('adjust');
   const [matchedMask, setMatchedMask] = useState(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
+
+  const handleExit = () => {
+    setStage('adjust');
+    setMatchedMask(null);
+    setIsUnlocked(false);
+  };
 
   const handleExecute = async (stats) => {
     setStage('loading');
@@ -473,14 +623,15 @@ export default function DiscoverMask() {
   };
 
   return (
-    <div className="w-full py-12 px-6">
+    <div className="w-full py-12 px-6 relative">
       <AnimatePresence mode="wait">
         {stage === 'adjust' && (
-          <AdjustStage 
-            key="adjust" 
-            onExecute={handleExecute} 
-            isUnlocked={isUnlocked} 
-            setIsUnlocked={setIsUnlocked} 
+          <AdjustStage
+            key="adjust"
+            onExecute={handleExecute}
+            isUnlocked={isUnlocked}
+            setIsUnlocked={setIsUnlocked}
+            onExit={handleExit}
           />
         )}
         {stage === 'loading' && <LoadingStage key="loading" />}
