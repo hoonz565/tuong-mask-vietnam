@@ -1,6 +1,6 @@
 # Vietnamese Tuong Mask Gallery (Mặt Nạ Tuồng Việt Nam)
 
-A digital exhibition web application built to showcase a collection of 115 traditional Tuong masks from Vietnam. The project is designed with a high-end, minimalist aesthetic, focusing on clean typography, accessible interactions, and smooth animations to provide a museum-like experience.
+A digital exhibition web application built to showcase a collection of 117 traditional Tuong masks from Vietnam. The project is designed with a high-end, minimalist aesthetic, focusing on clean typography, accessible interactions, and smooth animations to provide a museum-like experience.
 
 ## 🎭 Project Overview
 - **Objective:** Preserve and digitally exhibit the art of Vietnamese Tuong masks.
