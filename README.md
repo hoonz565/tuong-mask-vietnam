@@ -4,8 +4,7 @@ A digital exhibition web application built to showcase a collection of 115 tradi
 
 ## 🎭 Project Overview
 - **Objective:** Preserve and digitally exhibit the art of Vietnamese Tuong masks.
-- **Design Philosophy:** Minimalist, structured, and dark-mode by default (inspired by the Utopia Tokyo design system).
-
+- **Design Philosophy:** Minimalist, structured, and dark-mode by default.
 ## 🏗 Architecture & Tech Stack
 
 This project is a monorepo containing both the frontend application and the backend API.
@@ -35,7 +34,7 @@ This project is a monorepo containing both the frontend application and the back
    ```bash
    pip install -r requirements.txt
    ```
-3. Initialize the database (this creates `masks.db` and populates 115 mask entries):
+3. Initialize the database (this creates `masks.db` and populates 117 mask entries):
    ```bash
    python init_db.py
    ```
