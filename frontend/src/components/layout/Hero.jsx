@@ -181,7 +181,7 @@ export default function Hero() {
                 top: '48%',  
                 left: '38%', 
               }}
-              className="w-3 h-3 md:w-4 md:h-4 bg-secondary rounded-full shadow-[0_0_15px_rgba(255,0,0,0.8)]"
+              className="w-2 h-2 md:w-4 md:h-4 bg-secondary rounded-full shadow-[0_0_15px_rgba(255,0,0,0.8)]"
             />
 
             {/* Right Pupil */}
@@ -194,7 +194,7 @@ export default function Hero() {
                 top: '48%', 
                 left: '62%',
               }}
-              className="w-3 h-3 md:w-4 md:h-4 bg-secondary rounded-full shadow-[0_0_15px_rgba(255,0,0,0.8)]"
+              className="w-2 h-2 md:w-4 md:h-4 bg-secondary rounded-full shadow-[0_0_15px_rgba(255,0,0,0.8)]"
             />
 
             {/* Mask Image */}
