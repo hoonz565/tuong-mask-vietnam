@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GridView from './GridView';
 import DetailedView from './DetailedView';
@@ -11,8 +11,13 @@ export default function MaskGallery({ masks, loading, error }) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center w-full my-12" aria-live="polite">
-        <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm text-secondary uppercase tracking-widest">Scanning Database...</p>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full mb-4"
+          aria-hidden="true"
+        />
+        <p className="text-sm text-secondary uppercase tracking-widest">Loading...</p>
       </div>
     );
   }

@@ -17,6 +17,8 @@ app.add_middleware(
 )
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'masks.db')
+_mask_cache = None
+_mask_cache_mtime_ns = None
 
 # Ensure static/images directory exists
 # os.makedirs(os.path.join(os.path.dirname(__file__), 'static', 'images'), exist_ok=True)
@@ -41,21 +43,33 @@ def row_to_mask(row: sqlite3.Row) -> dict:
     return d
 
 
+def get_cached_masks():
+    """Load masks once and refresh the cache when the SQLite file changes."""
+    global _mask_cache, _mask_cache_mtime_ns
+
+    current_mtime_ns = os.stat(DB_PATH).st_mtime_ns
+    if _mask_cache is None or _mask_cache_mtime_ns != current_mtime_ns:
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM masks")
+            _mask_cache = [row_to_mask(row) for row in cursor.fetchall()]
+            _mask_cache_mtime_ns = current_mtime_ns
+        finally:
+            conn.close()
+
+    return _mask_cache
+
+
 # ---------------------------------------------------------------------------
 # GET /api/masks
 # ---------------------------------------------------------------------------
 @app.get("/api/masks")
 async def get_masks():
-    conn = get_connection()
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM masks")
-        masks = cursor.fetchall()
-        return [row_to_mask(m) for m in masks]
+        return get_cached_masks()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -63,20 +77,15 @@ async def get_masks():
 # ---------------------------------------------------------------------------
 @app.get("/api/masks/{mask_id}")
 async def get_mask(mask_id: str):
-    conn = get_connection()
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM masks WHERE id = ?", (mask_id,))
-        mask = cursor.fetchone()
+        mask = next((item for item in get_cached_masks() if item["id"] == mask_id), None)
         if not mask:
             raise HTTPException(status_code=404, detail="Mask not found")
-        return row_to_mask(mask)
+        return mask
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -91,11 +100,8 @@ class MatchPayload(BaseModel):
 
 @app.post("/api/masks/match")
 async def match_mask(payload: MatchPayload):
-    conn = get_connection()
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM masks")
-        masks = cursor.fetchall()
+        masks = get_cached_masks()
 
         if not masks:
             raise HTTPException(status_code=404, detail="No masks in database")
@@ -103,20 +109,20 @@ async def match_mask(payload: MatchPayload):
         best_mask = None
         best_distance = float("inf")
 
-        for row in masks:
-            m = dict(row)
+        for mask in masks:
+            stats = mask["stats"]
             dist = math.sqrt(
-                (payload.strength  - m.get("strength",  50)) ** 2 +
-                (payload.intellect - m.get("intellect", 50)) ** 2 +
-                (payload.spirit    - m.get("spirit",    50)) ** 2 +
-                (payload.ferocity  - m.get("ferocity",  50)) ** 2
+                (payload.strength  - stats.get("strength",  50)) ** 2 +
+                (payload.intellect - stats.get("intellect", 50)) ** 2 +
+                (payload.spirit    - stats.get("spirit",    50)) ** 2 +
+                (payload.ferocity  - stats.get("ferocity",  50)) ** 2
             )
             if dist < best_distance:
                 best_distance = dist
-                best_mask = row
+                best_mask = mask
 
         return {
-            "data": row_to_mask(best_mask),
+            "data": best_mask,
             "distance": round(best_distance, 2),
             "status": "ok"
         }
@@ -124,8 +130,6 @@ async def match_mask(payload: MatchPayload):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
 
 
 if __name__ == "__main__":

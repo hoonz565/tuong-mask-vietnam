@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { matchMask } from '../../api/maskService';
@@ -344,20 +344,20 @@ function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
 /* ═══════════════════════════════════════════════════════════════════
    STAGE 2: CYBERPUNK LOADING
    ═══════════════════════════════════════════════════════════════════ */
+const LOADING_LINES = [
+  '> INITIALIZING MATCH_PROTOCOL...', '> LOADING MASK INDEX...',
+  '> CALCULATING EUCLIDEAN DISTANCE...', '> MATCH FOUND. GENERATING RESULT...',
+];
+
 function LoadingStage() {
   const [progress, setProgress] = useState(0);
   const [line, setLine] = useState(0);
-  const lines = [
-    '> INITIALIZING MATCH_PROTOCOL...', '> SCANNING 117 MASK ENTRIES...',
-    '> PROCESSING DATA CHUNKS... HASH: 0x24EA53', '> CALCULATING EUCLIDEAN DISTANCE...',
-    '> CROSS-REFERENCING ARCHETYPE DB...', '> MATCH FOUND. GENERATING RESULT...',
-  ];
   useEffect(() => {
-    const dur = 2500; const start = Date.now();
+    const dur = 350; const start = Date.now();
     const tick = () => {
       const p = Math.min(100, ((Date.now() - start) / dur) * 100);
       setProgress(p);
-      setLine(Math.min(lines.length - 1, Math.floor((p / 100) * lines.length)));
+      setLine(Math.min(LOADING_LINES.length - 1, Math.floor((p / 100) * LOADING_LINES.length)));
       if (p < 100) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -379,7 +379,17 @@ function LoadingStage() {
         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-secondary/60" />
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-secondary/60" />
 
-        {lines.slice(0, line + 1).map((l, i) => (
+        <div className="flex items-center gap-4 mb-6">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+            className="w-10 h-10 shrink-0 border-2 border-secondary border-t-transparent rounded-full"
+            aria-hidden="true"
+          />
+          <p className="text-sm font-bold tracking-widest text-secondary uppercase">Loading...</p>
+        </div>
+
+        {LOADING_LINES.slice(0, line + 1).map((l, i) => (
           <motion.p key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-base md:text-lg font-bold tracking-wider text-secondary/90 mb-3">{l}</motion.p>
         ))}
         <p className="text-base md:text-lg text-tertiary/40 mt-4">{hex}</p>
@@ -618,11 +628,13 @@ export default function DiscoverMask() {
 
   const handleExecute = async (stats) => {
     setStage('loading');
+    const startedAt = performance.now();
     try {
-      const [mask] = await Promise.all([
-        matchMask(stats),
-        new Promise((r) => setTimeout(r, 2800)),
-      ]);
+      const mask = await matchMask(stats);
+      const remainingLoadingTime = Math.max(0, 350 - (performance.now() - startedAt));
+      if (remainingLoadingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingLoadingTime));
+      }
       setMatchedMask(mask);
       setStage('result');
     } catch (err) {
