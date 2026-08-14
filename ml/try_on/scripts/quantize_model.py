@@ -58,9 +58,14 @@ def sha256(path: Path) -> str:
 
 def smoke_test(fp32_path: Path, int8_path: Path) -> dict[str, float | list[int]]:
     rng = np.random.default_rng(20260815)
-    sample = rng.normal(0, 1, (1, 3, 512, 512)).astype(np.float32)
     fp32_session = ort.InferenceSession(str(fp32_path), providers=["CPUExecutionProvider"])
     int8_session = ort.InferenceSession(str(int8_path), providers=["CPUExecutionProvider"])
+    fp32_input_shape = fp32_session.get_inputs()[0].shape
+    int8_input_shape = int8_session.get_inputs()[0].shape
+    if fp32_input_shape != int8_input_shape:
+        raise ValueError("FP32 and INT8 model inputs must have the same shape")
+    input_shape = [1 if isinstance(dimension, str) else int(dimension) for dimension in fp32_input_shape]
+    sample = rng.normal(0, 1, input_shape).astype(np.float32)
     fp32_output = fp32_session.run(None, {fp32_session.get_inputs()[0].name: sample})[0]
     int8_output = int8_session.run(None, {int8_session.get_inputs()[0].name: sample})[0]
     agreement = float(np.mean(np.argmax(fp32_output, axis=1) == np.argmax(int8_output, axis=1)))

@@ -75,7 +75,15 @@ export async function getTryOnTemplate(templateId) {
   return validateTryOnTemplate(template);
 }
 
-export async function loadTryOnTextAsset(path) {
+export async function sha256Text(source) {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error('Web Crypto is required to verify Try-On assets.');
+  }
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function loadTryOnTextAsset(path, expectedSha256) {
   if (!path.startsWith('/try-on/')) {
     throw new Error(`Blocked non Try-On asset path: ${path}`);
   }
@@ -84,5 +92,12 @@ export async function loadTryOnTextAsset(path) {
   if (!response.ok) {
     throw new Error(`Unable to load Try-On asset ${path}: ${response.status}`);
   }
-  return response.text();
+  const source = await response.text();
+  if (expectedSha256) {
+    const actualSha256 = await sha256Text(source);
+    if (actualSha256 !== expectedSha256) {
+      throw new Error(`Try-On asset integrity check failed: ${path}`);
+    }
+  }
+  return source;
 }

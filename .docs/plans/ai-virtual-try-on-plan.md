@@ -116,9 +116,9 @@ flowchart LR
 - Run Face Landmarker in `VIDEO` mode inside a dedicated worker.
 - Run face parsing in a second worker or a scheduler that cannot queue more than one unresolved frame.
 - Prefer an optimized/quantized face-parsing model exported to ONNX/ORT format.
-- Use ONNX Runtime Web with execution-provider order `webgpu -> wasm`; benchmark WebGL only as a legacy fallback because it is in maintenance mode.
+- Use ONNX Runtime Web. Benchmark provider order per artifact: the selected QDQ INT8 parser defaults to WASM because measured WebGPU latency is much worse; WebGPU remains an explicit diagnostic path. Benchmark WebGL only as a legacy fallback because it is in maintenance mode.
 - Do not assume WebGPU on Safari/iOS. The [official ONNX Runtime Web support matrix](https://onnxruntime.ai/docs/get-started/with-javascript/web.html#supported-versions) currently requires a WASM/WebGL fallback there.
-- Keep all model inputs at a fixed, benchmarked resolution (start with 256×256 parsing crops) to bound latency and memory.
+- Keep all model inputs at a fixed, benchmarked resolution. Experiments started at 512/256; the technical pilot uses 128×128 parsing crops to meet browser cadence, with boundary-quality release gates left open.
 - Load models only when the user opens Try-On, then cache immutable model assets with content hashes.
 
 On-device inference reduces latency, server cost and privacy risk; ONNX Runtime documents these same browser-inference advantages in its [Web deployment guide](https://onnxruntime.ai/docs/tutorials/web/).
@@ -440,11 +440,11 @@ Do not collect raw camera images, face crops, landmarks or inferred demographic 
 
 ### Phase 0 — Feasibility, licensing and benchmark (1–2 weeks)
 
-- [ ] Re-author one simple and one complex Tuồng template into canonical layers.
+- [x] Re-author one simple and one complex Tuồng template into canonical layers.
 - [x] Build an isolated Face Landmarker worker spike with one-face tracking.
-- [ ] Compare rigid placement, piecewise-affine mesh and offline TPS on the same fixtures.
+- [x] Compare rigid placement, piecewise-affine mesh and offline TPS on the same fixtures.
 - [ ] Benchmark two parsing candidates in FP32/quantized form on the device matrix.
-- [ ] Test WebGPU and WASM paths; record load time, memory, landmark/parse latency and FPS.
+- [x] Test WebGPU and WASM paths; record load time, memory, landmark/parse latency and FPS.
 - [x] Create dataset/code/weights license matrix.
 - [x] Define cultural reviewer and template approval checklist.
 - [x] Define privacy/consent protocol for the evaluation dataset.
@@ -453,10 +453,10 @@ Do not collect raw camera images, face crops, landmarks or inferred demographic 
 
 ### Phase 1 — Geometry-first live MVP (2 weeks)
 
-- [ ] Camera permission, device selection, mirrored preview and cleanup lifecycle.
+- [x] Camera permission, device selection, mirrored preview and cleanup lifecycle.
 - [x] Lazy-loaded MediaPipe worker with pinned versions.
 - [x] Single-face state machine and alignment guide.
-- [ ] WebGL camera + layered mesh renderer.
+- [x] WebGL camera + layered mesh renderer.
 - [x] Region-specific pose/expression deformation and protected eye/mouth polygons.
 - [x] Three pilot templates through `tryOnService` and a versioned manifest.
 - [x] Performance overlay available only in development.
@@ -467,11 +467,11 @@ Do not collect raw camera images, face crops, landmarks or inferred demographic 
 ### Phase 2 — Face parsing and temporal fusion (2–3 weeks)
 
 - [x] Integrate selected parser worker with WebGPU/WASM fallback.
-- [ ] Implement semantic clipping, mask cleanup, feathering and mesh reprojection.
+- [x] Implement semantic clipping, mask cleanup, feathering and mesh reprojection.
 - [x] Add adaptive frame scheduling and stale-result dropping.
 - [x] Add One Euro/pose filters and confidence-driven hold/fade/reacquire behavior.
 - [x] Add pose limits, self-occlusion and conservative fallback behavior.
-- [ ] Build still-frame, prerecorded-clip and long-session regression harnesses.
+- [x] Build still-frame, prerecorded-clip and long-session regression harnesses.
 - [ ] Evaluate group-wise quality and decide whether fine-tuning is necessary.
 
 **Exit gate:** technical, visual and fairness pilot thresholds pass on the supported device matrix, or remaining gaps have an approved narrow fallback such as still-photo mode.
@@ -503,8 +503,8 @@ Do not collect raw camera images, face crops, landmarks or inferred demographic 
 - [ ] Memory-leak and 10-minute thermal/performance tests.
 - [x] Model/template cache invalidation and rollback procedure.
 - [x] Privacy copy, camera indicator and deletion/cleanup verification.
-- [ ] Anonymous metric schema with prohibited-field tests.
-- [ ] Feature flag: internal -> invited pilot -> 10% -> 50% -> 100%.
+- [x] Anonymous metric schema with prohibited-field tests.
+- [x] Feature flag: internal -> invited pilot -> 10% -> 50% -> 100%.
 - [x] Operational runbook for model/template rollback and browser regression.
 
 **Exit gate:** no severity-1 privacy/camera lifecycle issue, all launch gates pass, and a previous model/template version can be restored without redeploying the whole gallery.

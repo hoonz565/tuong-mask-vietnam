@@ -21,7 +21,7 @@ function drawCover(context, image, x, y, width, height) {
   context.drawImage(image, sx, sy, sourceWidth, sourceHeight, x, y, width, height);
 }
 
-function drawArchiveFrame(context, layout, image, template) {
+function drawArchiveFrame(context, layout, images, template) {
   const margin = layout.id === 'strip' ? 56 : 48;
   context.fillStyle = '#14171f';
   context.fillRect(0, 0, layout.width, layout.height);
@@ -38,10 +38,11 @@ function drawArchiveFrame(context, layout, image, template) {
     const gap = 14;
     const panelHeight = (imageHeight - gap * 2) / 3;
     for (let panel = 0; panel < 3; panel += 1) {
+      const image = images[panel % images.length];
       drawCover(context, image, margin, margin + panel * (panelHeight + gap), layout.width - margin * 2, panelHeight);
     }
   } else {
-    drawCover(context, image, margin, margin, layout.width - margin * 2, imageHeight);
+    drawCover(context, images[0], margin, margin, layout.width - margin * 2, imageHeight);
   }
 
   context.fillStyle = '#ebe5ce';
@@ -61,17 +62,19 @@ function canvasToBlob(canvas, type, quality) {
   });
 }
 
-export async function composeCapture(sourceBlob, layoutId, template, type = 'image/png') {
+export async function composeCapture(sourceBlobs, layoutId, template, type = 'image/png') {
   const layout = PHOTO_LAYOUTS.find((item) => item.id === layoutId) || PHOTO_LAYOUTS[0];
-  const bitmap = await createImageBitmap(sourceBlob);
+  const blobs = Array.isArray(sourceBlobs) ? sourceBlobs : [sourceBlobs];
+  if (blobs.length === 0) throw new Error('Không có ảnh Photobooth để xuất.');
+  const bitmaps = await Promise.all(blobs.map((blob) => createImageBitmap(blob)));
   try {
     const canvas = document.createElement('canvas');
     canvas.width = layout.width;
     canvas.height = layout.height;
     const context = canvas.getContext('2d', { alpha: false });
-    drawArchiveFrame(context, layout, bitmap, template);
+    drawArchiveFrame(context, layout, bitmaps, template);
     return await canvasToBlob(canvas, type, 0.94);
   } finally {
-    bitmap.close();
+    bitmaps.forEach((bitmap) => bitmap.close());
   }
 }

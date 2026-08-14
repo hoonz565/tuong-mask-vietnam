@@ -4,6 +4,8 @@
 
 Each template lives at an immutable versioned path and binds to the MediaPipe canonical 468-point topology. The atlas must be transparent outside painted regions and must not include baked-in eyeballs, irises, teeth or mouth cavity. Required manifest fields include linked `mask_id`, version, atlas SHA-256, semantic layers, pose limits, release channel, license and cultural review state.
 
+The canonical SVG atlas must expose three top-level semantic groups: `layer-base`, `layer-eyes` and `layer-mouth`. The runtime rasterizes each group independently at 1024×1024 and uploads one WebGL texture per group. Their manifest bindings are `base`, `eye_motifs` and `mouth`; adding a new layer ID requires an explicit `svg_group` field. Keep shared masks and reusable definitions inside `<defs>`, outside the layer groups.
+
 Review the neutral, blink, brow raise, smile, jaw-open, yaw ±35° and pitch ±25° fixtures. Reject the asset for inverted triangles, torn strokes, occluded eyes/teeth, character motif mixing, unintended skin-tone changes or attribution mismatch.
 
 ## Cultural approval checklist

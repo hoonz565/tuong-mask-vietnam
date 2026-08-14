@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { disposeWorker, stopStream, waitForWorker } from './TryOnEngine';
+import {
+  buildCameraConstraints,
+  detectTryOnSupport,
+  disposeWorker,
+  stopStream,
+  waitForWorker,
+} from './TryOnEngine';
 
 describe('camera cleanup', () => {
   it('stops every media track', () => {
@@ -10,6 +16,47 @@ describe('camera cleanup', () => {
 
   it('accepts an absent stream during idempotent cleanup', () => {
     expect(() => stopStream(null)).not.toThrow();
+  });
+});
+
+describe('camera constraints', () => {
+  it('uses facing mode until the user selects a concrete camera', () => {
+    expect(buildCameraConstraints('user', null).video).toMatchObject({
+      facingMode: { ideal: 'user' },
+    });
+  });
+
+  it('uses an exact device id for an explicit camera selection', () => {
+    const video = buildCameraConstraints('environment', 'camera-2').video;
+    expect(video.deviceId).toEqual({ exact: 'camera-2' });
+    expect(video).not.toHaveProperty('facingMode');
+  });
+});
+
+describe('capability preflight', () => {
+  it('reports concrete missing browser capabilities before camera permission', () => {
+    const report = detectTryOnSupport({
+      navigator: { mediaDevices: {} },
+      document: { createElement: () => ({ getContext: () => null }) },
+    });
+    expect(report.supported).toBe(false);
+    expect(report.missing).toEqual(['camera API', 'Web Worker', 'ImageBitmap', 'WebGL2']);
+  });
+
+  it('accepts the complete browser pipeline', () => {
+    const loseContext = vi.fn();
+    const report = detectTryOnSupport({
+      navigator: { mediaDevices: { getUserMedia: vi.fn() } },
+      Worker: vi.fn(),
+      createImageBitmap: vi.fn(),
+      document: {
+        createElement: () => ({
+          getContext: () => ({ getExtension: () => ({ loseContext }) }),
+        }),
+      },
+    });
+    expect(report).toEqual({ supported: true, missing: [] });
+    expect(loseContext).toHaveBeenCalledOnce();
   });
 });
 

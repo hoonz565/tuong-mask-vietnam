@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Camera, FlipHorizontal2, Gauge, ScanFace, ShieldCheck, X } from 'lucide-react';
-import { TryOnEngine } from '../engine/TryOnEngine';
+import { detectTryOnSupport, TryOnEngine } from '../engine/TryOnEngine';
 import { initialTryOnState, TRY_ON_STATES, tryOnReducer } from '../state/tryOnMachine';
 import Photobooth from './Photobooth';
 
@@ -32,9 +32,11 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
   const [status, setStatus] = useState('Camera chỉ được mở sau khi bạn đồng ý.');
   const [capabilities, setCapabilities] = useState(null);
   const [performanceSummary, setPerformanceSummary] = useState(null);
-  const [capture, setCapture] = useState(null);
+  const [captures, setCaptures] = useState([]);
   const [compare, setCompare] = useState(false);
   const [intensity, setIntensity] = useState(1);
+  const [cameraDevices, setCameraDevices] = useState([]);
+  const [activeDeviceId, setActiveDeviceId] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
@@ -45,6 +47,11 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
     () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
     [],
   );
+  const support = useMemo(() => detectTryOnSupport(), []);
+  const parserProviderPreference = useMemo(() => {
+    const requested = new URLSearchParams(globalThis.location?.search || '').get('tryOnParser');
+    return requested === 'wasm' || requested === 'webgpu' ? requested : 'auto';
+  }, []);
 
   const handleClose = useCallback(() => {
     captureSequenceRef.current += 1;
@@ -106,6 +113,13 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
   }
 
   async function start() {
+    if (!support.supported) {
+      dispatch({
+        type: 'UNSUPPORTED',
+        error: `Trình duyệt thiếu ${support.missing.join(', ')}. Gallery vẫn sử dụng bình thường.`,
+      });
+      return;
+    }
     dispatch({ type: 'REQUEST_CAMERA' });
     const engine = new TryOnEngine({
       video: videoRef.current,
@@ -113,11 +127,20 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
       onStatus: handleStatus,
       onFaceState: ({ state: faceState }) => dispatch({ type: 'FACE_STATE', faceState }),
       onPerformance: setPerformanceSummary,
+      parserProviderPreference,
     });
     engineRef.current = engine;
     try {
       const nextCapabilities = await engine.start(template);
       setCapabilities(nextCapabilities);
+      try {
+        const devices = await engine.listVideoInputs();
+        setCameraDevices(devices);
+        const selected = engine.stream?.getVideoTracks?.()[0]?.getSettings?.().deviceId;
+        setActiveDeviceId(selected || devices[0]?.deviceId || '');
+      } catch {
+        setCameraDevices([]);
+      }
     } catch (error) {
       if (error.name !== 'AbortError') {
         dispatch({ type: 'FAIL', error: cameraErrorMessage(error) });
@@ -155,8 +178,13 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
       if (captureSequenceRef.current !== sequence) return;
     }
     try {
-      const blob = await engineRef.current.capture();
-      setCapture(blob);
+      const burst = [];
+      for (let shot = 0; shot < 3; shot += 1) {
+        if (captureSequenceRef.current !== sequence) return;
+        burst.push(await engineRef.current.capture());
+        if (shot < 2) await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 80 : 220));
+      }
+      setCaptures(burst);
       dispatch({ type: 'CAPTURED' });
     } catch (error) {
       dispatch({ type: 'FAIL', error: error.message });
@@ -164,21 +192,38 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
   }
 
   function retake() {
-    setCapture(null);
+    setCaptures([]);
     dispatch({ type: 'RESUME' });
   }
 
   async function flipCamera() {
     try {
       await engineRef.current?.flipCamera();
+      const selected = engineRef.current?.stream?.getVideoTracks?.()[0]?.getSettings?.().deviceId;
+      setActiveDeviceId(selected || '');
+    } catch (error) {
+      dispatch({ type: 'FAIL', error: cameraErrorMessage(error) });
+    }
+  }
+
+  async function selectCamera(event) {
+    const deviceId = event.target.value;
+    try {
+      await engineRef.current?.selectCamera(deviceId);
+      setActiveDeviceId(deviceId);
     } catch (error) {
       dispatch({ type: 'FAIL', error: cameraErrorMessage(error) });
     }
   }
 
   const isLoading = [TRY_ON_STATES.PERMISSION, TRY_ON_STATES.LOADING].includes(state.value);
-  const cameraStarted = state.value !== TRY_ON_STATES.INTRO && state.value !== TRY_ON_STATES.ERROR;
-  const faceReady = state.faceState === 'tracked';
+  const cameraStarted = ![
+    TRY_ON_STATES.INTRO,
+    TRY_ON_STATES.ERROR,
+    TRY_ON_STATES.UNSUPPORTED,
+  ].includes(state.value);
+  const faceTracked = state.faceState === 'tracked';
+  const faceRenderable = ['tracked', 'uncertain'].includes(state.faceState);
   const outOfPose = state.faceState === 'uncertain';
 
   return (
@@ -191,6 +236,16 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
       aria-labelledby="try-on-title"
       aria-busy={isLoading || state.value === TRY_ON_STATES.CAPTURING}
       data-state={state.value}
+      data-parser-provider={capabilities?.parserExecutionProvider || 'pending'}
+      data-parser-error={capabilities?.parserError || ''}
+      data-render-fps={performanceSummary?.render_fps?.median?.toFixed(2) || 'pending'}
+      data-parser-hz={performanceSummary?.parser_hz?.median?.toFixed(2) || 'pending'}
+      data-parser-p95-ms={performanceSummary?.parser_latency_ms?.p95?.toFixed(2) || 'pending'}
+      data-parser-samples={performanceSummary?.parser_latency_ms?.count || 0}
+      data-parser-warmup-ms={performanceSummary?.parser_warmup_ms?.median?.toFixed(2) || 'pending'}
+      data-parser-preprocess-ms={performanceSummary?.parser_preprocess_ms?.median?.toFixed(2) || 'pending'}
+      data-parser-inference-ms={performanceSummary?.parser_inference_ms?.median?.toFixed(2) || 'pending'}
+      data-parser-postprocess-ms={performanceSummary?.parser_postprocess_ms?.median?.toFixed(2) || 'pending'}
     >
       <div className="mx-auto min-h-full max-w-7xl border border-tertiary/20 bg-primary shadow-2xl">
         <header className="flex items-center justify-between border-b border-tertiary/15 px-4 py-3 md:px-6">
@@ -203,15 +258,15 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
           </button>
         </header>
 
-        {state.value === TRY_ON_STATES.REVIEW && capture ? (
+        {state.value === TRY_ON_STATES.REVIEW && captures.length > 0 ? (
           <main className="p-4 md:p-6">
-            <Photobooth capture={capture} template={template} onRetake={retake} onClose={handleClose} />
+            <Photobooth captures={captures} template={template} onRetake={retake} onClose={handleClose} />
           </main>
         ) : (
           <main className="grid min-h-[76vh] lg:grid-cols-[minmax(0,1fr)_330px]">
             <section className="relative min-h-[56vh] overflow-hidden bg-surface" aria-label="Camera Try-On">
               <video ref={videoRef} className="hidden" aria-hidden="true" />
-              <canvas ref={canvasRef} className="h-full min-h-[56vh] w-full" aria-label="Hình camera với mặt nạ Tuồng được biến dạng theo khuôn mặt" />
+              <canvas ref={canvasRef} role="img" className="h-full min-h-[56vh] w-full" aria-label="Hình camera với mặt nạ Tuồng được biến dạng theo khuôn mặt" />
 
               {state.value === TRY_ON_STATES.INTRO && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-primary px-7 text-center">
@@ -226,6 +281,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
                     Cho phép camera và bắt đầu
                   </button>
                   <p className="mt-5 text-[11px] uppercase tracking-[0.2em] text-tertiary/40">Cần HTTPS hoặc localhost · một khuôn mặt</p>
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-tertiary/30">Pilot đã kiểm tra trên Chrome desktop · iOS/Safari cần device QA trước public launch</p>
                 </div>
               )}
               {isLoading && <LoadingPanel state={state.value} status={status} />}
@@ -236,16 +292,23 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
                   <button type="button" onClick={() => { dispatch({ type: 'RESET' }); setStatus('Camera chỉ được mở sau khi bạn đồng ý.'); }} className="mt-7 border border-tertiary/30 px-6 py-3 text-sm uppercase text-tertiary">Thử lại</button>
                 </div>
               )}
+              {state.value === TRY_ON_STATES.UNSUPPORTED && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-primary px-8 text-center" role="alert">
+                  <p className="text-xl uppercase text-secondary">Thiết bị chưa được hỗ trợ</p>
+                  <p className="mt-4 max-w-lg text-sm font-normal leading-relaxed text-tertiary/70">{state.error}</p>
+                  <button type="button" onClick={handleClose} className="mt-7 border border-tertiary/30 px-6 py-3 text-sm uppercase text-tertiary">Quay lại gallery</button>
+                </div>
+              )}
 
               {cameraStarted && !isLoading && state.value !== TRY_ON_STATES.ERROR && (
                 <>
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-                    {!faceReady && <div className="h-[52%] w-[44%] max-w-sm rounded-[48%] border border-dashed border-secondary/80" />}
+                    {!faceTracked && <div className="h-[52%] w-[44%] max-w-sm rounded-[48%] border border-dashed border-secondary/80" />}
                   </div>
                   <div className="absolute left-4 top-4 flex items-center gap-2 bg-primary/75 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-tertiary backdrop-blur">
                     <ShieldCheck size={14} className="text-secondary" /> Xử lý trên thiết bị
                   </div>
-                  {!faceReady && (
+                  {!faceTracked && (
                     <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-primary/85 px-4 py-2 text-center text-xs uppercase text-secondary" role="status">
                       {outOfPose ? 'Đưa mặt về chính diện' : 'Đặt một khuôn mặt vào khung'}
                     </div>
@@ -288,6 +351,16 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
                 <button type="button" onClick={flipCamera} disabled={!cameraStarted} className="flex w-full items-center justify-center gap-2 border border-tertiary/25 px-4 py-3 text-xs uppercase text-tertiary disabled:opacity-40">
                   <FlipHorizontal2 size={16} /> Đổi camera
                 </button>
+                {cameraDevices.length > 1 && (
+                  <label className="block text-[11px] uppercase tracking-widest text-tertiary/60">
+                    Camera đang dùng
+                    <select value={activeDeviceId} onChange={selectCamera} className="mt-2 w-full border border-tertiary/25 bg-primary px-3 py-3 text-xs text-tertiary">
+                      {cameraDevices.map((device) => (
+                        <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
 
               <div className="mt-auto pt-6">
@@ -296,7 +369,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
                     Thiết bị đang chạy geometry-only fallback; vùng tóc/vật che có thể kém chính xác.
                   </p>
                 )}
-                <button type="button" onClick={capturePhoto} disabled={!faceReady || state.value === TRY_ON_STATES.CAPTURING} className="flex w-full items-center justify-center gap-2 bg-secondary px-5 py-4 text-sm uppercase text-primary disabled:cursor-not-allowed disabled:opacity-40">
+                <button type="button" onClick={capturePhoto} disabled={!faceRenderable || state.value === TRY_ON_STATES.CAPTURING} className="flex w-full items-center justify-center gap-2 bg-secondary px-5 py-4 text-sm uppercase text-primary disabled:cursor-not-allowed disabled:opacity-40">
                   <Camera size={18} /> Chụp Photobooth
                 </button>
                 {import.meta.env.DEV && performanceSummary && (

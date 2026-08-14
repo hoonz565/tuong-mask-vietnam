@@ -24,4 +24,13 @@ describe('FrameScheduler', () => {
     [1, 2, 3, 4, 100].forEach((value) => tracker.record('latency', value));
     expect(tracker.summary().latency).toMatchObject({ median: 3, p95: 100, count: 5 });
   });
+
+  it('records event cadence without inventing a first sample', () => {
+    const tracker = new PerformanceTracker();
+    tracker.recordRate('parser_hz', 100);
+    tracker.recordRate('parser_hz', 200);
+    tracker.recordRate('parser_hz', 325);
+    expect(tracker.summary().parser_hz).toMatchObject({ count: 2 });
+    expect(tracker.summary().parser_hz.median).toBeCloseTo(10);
+  });
 });

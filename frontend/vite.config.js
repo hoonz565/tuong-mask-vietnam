@@ -11,6 +11,11 @@ const allowedMediaPipeLoaders = new Set([
   'vision_wasm_nosimd_internal.js',
 ])
 
+const isolationHeaders = {
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Embedder-Policy': 'require-corp',
+}
+
 function serveMediaPipeLoaderInDevelopment() {
   return {
     name: 'serve-mediapipe-loader-in-development',
@@ -30,4 +35,9 @@ function serveMediaPipeLoaderInDevelopment() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [serveMediaPipeLoaderInDevelopment(), react(), tailwindcss()],
+  server: { headers: isolationHeaders },
+  preview: { headers: isolationHeaders },
+  test: {
+    include: ['src/**/*.test.{js,jsx}'],
+  },
 })

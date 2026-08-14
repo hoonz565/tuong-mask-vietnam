@@ -23,14 +23,14 @@ void main() {
 const MASK_VERTEX_SHADER = `#version 300 es
 in vec2 a_position;
 in vec2 a_uv;
-in vec2 a_source;
+in vec2 a_parse_uv;
 in float a_visibility;
 out vec2 v_uv;
-out vec2 v_source;
+out vec2 v_parse_uv;
 out float v_visibility;
 void main() {
   v_uv = a_uv;
-  v_source = a_source;
+  v_parse_uv = a_parse_uv;
   v_visibility = a_visibility;
   gl_Position = vec4(a_position, 0.0, 1.0);
 }`;
@@ -39,23 +39,21 @@ const MASK_FRAGMENT_SHADER = `#version 300 es
 precision mediump float;
 uniform sampler2D u_atlas;
 uniform sampler2D u_parse;
-uniform vec4 u_parse_roi;
 uniform bool u_has_parse;
 uniform float u_alpha;
 uniform float u_intensity;
 in vec2 v_uv;
-in vec2 v_source;
+in vec2 v_parse_uv;
 in float v_visibility;
 out vec4 outColor;
 void main() {
   vec4 paint = texture(u_atlas, v_uv);
   float semanticAlpha = 1.0;
   if (u_has_parse) {
-    vec2 parseUv = (v_source - u_parse_roi.xy) / u_parse_roi.zw;
-    if (any(lessThan(parseUv, vec2(0.0))) || any(greaterThan(parseUv, vec2(1.0)))) {
+    if (any(lessThan(v_parse_uv, vec2(0.0))) || any(greaterThan(v_parse_uv, vec2(1.0)))) {
       semanticAlpha = 0.0;
     } else {
-      semanticAlpha = texture(u_parse, parseUv).r;
+      semanticAlpha = texture(u_parse, v_parse_uv).r;
     }
   }
   float alpha = paint.a * semanticAlpha * u_alpha * u_intensity * v_visibility;
@@ -129,6 +127,18 @@ export function landmarkToClip(landmark, cover, mirror) {
   };
 }
 
+export function createReprojectedParseUvs(mesh, sourceLandmarks, roi) {
+  if (!mesh || !sourceLandmarks || !roi || roi.width <= 0 || roi.height <= 0) return null;
+  const parseUvs = new Float32Array(mesh.vertexIndices.length * 2);
+  for (let index = 0; index < mesh.vertexIndices.length; index += 1) {
+    const landmark = sourceLandmarks[mesh.vertexIndices[index]];
+    if (!landmark) return null;
+    parseUvs[index * 2] = (landmark.x - roi.x) / roi.width;
+    parseUvs[index * 2 + 1] = (landmark.y - roi.y) / roi.height;
+  }
+  return parseUvs;
+}
+
 export class TuongRenderer {
   constructor(canvas, { mirror = true } = {}) {
     this.canvas = canvas;
@@ -144,18 +154,17 @@ export class TuongRenderer {
     this.videoProgram = createProgram(this.gl, VIDEO_VERTEX_SHADER, VIDEO_FRAGMENT_SHADER);
     this.maskProgram = createProgram(this.gl, MASK_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
     this.videoTexture = createTexture(this.gl);
-    this.atlasTexture = createTexture(this.gl);
+    this.atlasTextures = [];
     this.parseTexture = createTexture(this.gl);
     this.videoPositionBuffer = this.gl.createBuffer();
     this.videoUvBuffer = this.gl.createBuffer();
     this.maskPositionBuffer = this.gl.createBuffer();
     this.maskUvBuffer = this.gl.createBuffer();
-    this.maskSourceBuffer = this.gl.createBuffer();
+    this.maskParseUvBuffer = this.gl.createBuffer();
     this.maskVisibilityBuffer = this.gl.createBuffer();
     this.mesh = null;
     this.template = null;
     this.hasParse = false;
-    this.parseRoi = [0, 0, 1, 1];
     this.parseEma = null;
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.videoPositionBuffer);
@@ -174,20 +183,34 @@ export class TuongRenderer {
     this.mirror = Boolean(mirror);
   }
 
-  setTemplate({ template, mesh, image }) {
+  setTemplate({ template, mesh, layers }) {
     const gl = this.gl;
     this.template = template;
     this.mesh = mesh;
-    gl.bindTexture(gl.TEXTURE_2D, this.atlasTexture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    this.atlasTextures.forEach(({ texture }) => gl.deleteTexture(texture));
+    this.atlasTextures = layers.map((layer) => {
+      const texture = createTexture(gl);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, layer.image);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      return { ...layer, texture };
+    });
     gl.bindBuffer(gl.ARRAY_BUFFER, this.maskUvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, mesh.uvCoordinates, gl.STATIC_DRAW);
+    if (!this.hasParse) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.maskParseUvBuffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(mesh.vertexIndices.length * 2),
+        gl.DYNAMIC_DRAW,
+      );
+    }
   }
 
-  updateSegmentation({ alpha, width, height, roi }) {
-    if (!alpha || !width || !height || !roi) return;
+  updateSegmentation({ alpha, width, height, roi, sourceLandmarks }) {
+    const parseUvs = createReprojectedParseUvs(this.mesh, sourceLandmarks, roi);
+    if (!alpha || !width || !height || !parseUvs) return;
     if (!this.parseEma || this.parseEma.length !== alpha.length) {
       this.parseEma = new Uint8Array(alpha);
     } else {
@@ -199,7 +222,8 @@ export class TuongRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this.parseTexture);
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, width, height, 0, gl.RED, gl.UNSIGNED_BYTE, this.parseEma);
-    this.parseRoi = [roi.x, roi.y, roi.width, roi.height];
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.maskParseUvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, parseUvs, gl.DYNAMIC_DRAW);
     this.hasParse = true;
   }
 
@@ -246,7 +270,6 @@ export class TuongRenderer {
   updateMeshBuffers(landmarks, cover, pose) {
     const count = this.mesh.vertexIndices.length;
     const positions = new Float32Array(count * 2);
-    const sources = new Float32Array(count * 2);
     const visibility = new Float32Array(count);
     const yaw = pose?.yaw || 0;
 
@@ -269,9 +292,6 @@ export class TuongRenderer {
         const landmark = landmarks[landmarkIndex];
         positions[expandedIndex * 2] = triangle[corner].x;
         positions[expandedIndex * 2 + 1] = triangle[corner].y;
-        sources[expandedIndex * 2] = landmark.x;
-        sources[expandedIndex * 2 + 1] = landmark.y;
-
         let sideFade = 1;
         if (Math.abs(yaw) > 22) {
           const farSide = yaw > 0 ? landmark.x < 0.38 : landmark.x > 0.62;
@@ -284,8 +304,6 @@ export class TuongRenderer {
     const gl = this.gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.maskPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.maskSourceBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, sources, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.maskVisibilityBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, visibility, gl.DYNAMIC_DRAW);
   }
@@ -301,7 +319,7 @@ export class TuongRenderer {
     const attributes = [
       ['a_position', this.maskPositionBuffer, 2],
       ['a_uv', this.maskUvBuffer, 2],
-      ['a_source', this.maskSourceBuffer, 2],
+      ['a_parse_uv', this.maskParseUvBuffer, 2],
       ['a_visibility', this.maskVisibilityBuffer, 1],
     ];
     for (const [name, buffer, size] of attributes) {
@@ -311,17 +329,18 @@ export class TuongRenderer {
       gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     }
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.atlasTexture);
-    gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_atlas'), 0);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.parseTexture);
     gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_parse'), 1);
-    gl.uniform4fv(gl.getUniformLocation(this.maskProgram, 'u_parse_roi'), this.parseRoi);
     gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_has_parse'), this.hasParse);
     gl.uniform1f(gl.getUniformLocation(this.maskProgram, 'u_alpha'), alpha * poseOpacity(pose, this.template.pose_limits));
     gl.uniform1f(gl.getUniformLocation(this.maskProgram, 'u_intensity'), intensity);
-    gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertexIndices.length);
+    for (const layer of this.atlasTextures) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, layer.texture);
+      gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_atlas'), 0);
+      gl.drawArrays(gl.TRIANGLES, 0, this.mesh.vertexIndices.length);
+    }
   }
 
   render({ video, landmarks, pose, alpha = 1, intensity = 1, compare = false }) {
@@ -348,18 +367,20 @@ export class TuongRenderer {
 
   dispose() {
     const gl = this.gl;
-    [this.videoTexture, this.atlasTexture, this.parseTexture].forEach((texture) => gl.deleteTexture(texture));
+    [this.videoTexture, this.parseTexture, ...this.atlasTextures.map((layer) => layer.texture)]
+      .forEach((texture) => gl.deleteTexture(texture));
     [
       this.videoPositionBuffer,
       this.videoUvBuffer,
       this.maskPositionBuffer,
       this.maskUvBuffer,
-      this.maskSourceBuffer,
+      this.maskParseUvBuffer,
       this.maskVisibilityBuffer,
     ].forEach((buffer) => gl.deleteBuffer(buffer));
     gl.deleteProgram(this.videoProgram);
     gl.deleteProgram(this.maskProgram);
     this.mesh = null;
     this.template = null;
+    this.atlasTextures = [];
   }
 }

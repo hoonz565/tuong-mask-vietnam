@@ -11,13 +11,13 @@
       "deployment_review": "pending_final_artifact_license_review"
     },
     {
-      "id": "bisenet_resnet18_face_parser_int8_rnd_v1",
-      "url": "/models/try-on/face_parser.bisenet.resnet18.int8.28935b49.onnx",
-      "bytes": 13499427,
-      "sha256": "28935b494a29a8fa4722ccda0ad785d7e742d96d38e04199b744609333eed38a",
+      "id": "bisenet_resnet18_face_parser_int8_128_rnd_v2",
+      "url": "/models/try-on/face_parser.bisenet.resnet18.int8.128.222a5076.onnx",
+      "bytes": 13488701,
+      "sha256": "222a507649df3b2f0edcda6b7d5da8616fd4ff40b2e4f47f334aa1ecac2192be",
       "upstream": "https://github.com/yakhyo/face-parsing",
       "deployment_review": "research_only_non_commercial_data_dependency"
     }
   ],
-  "total_model_bytes": 17258023
+  "total_model_bytes": 17247297
 }

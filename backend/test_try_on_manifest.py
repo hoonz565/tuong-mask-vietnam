@@ -21,6 +21,10 @@ class TryOnManifestTests(unittest.TestCase):
             self.assertEqual(template["topology_version"], "mediapipe_face_468_v1")
             self.assertEqual(template["release_channel"], "technical_pilot")
             self.assertGreater(len(template["layers"]), 0)
+            self.assertEqual(
+                [layer["id"] for layer in template["layers"]],
+                ["base", "eye_motifs", "mouth"],
+            )
             self.assertIn("status", template["cultural_review"])
             self.assertIn("asset_owner", template["license"])
 

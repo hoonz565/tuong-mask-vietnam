@@ -3,18 +3,21 @@ import { Download, RefreshCw, Share2 } from 'lucide-react';
 import { composeCapture, PHOTO_LAYOUTS } from '../photobooth/CaptureComposer';
 import { downloadBlob, shareBlob } from '../photobooth/ShareExporter';
 
-export default function Photobooth({ capture, template, onRetake, onClose }) {
+export default function Photobooth({ captures, template, onRetake, onClose }) {
   const [layout, setLayout] = useState('square');
+  const [selectedIndex, setSelectedIndex] = useState(Math.min(1, captures.length - 1));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('Ảnh vẫn ở trên thiết bị của bạn.');
-  const previewUrl = useMemo(() => URL.createObjectURL(capture), [capture]);
+  const previewUrls = useMemo(() => captures.map((capture) => URL.createObjectURL(capture)), [captures]);
+  const selectedCapture = captures[selectedIndex] || captures[0];
 
-  useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl]);
+  useEffect(() => () => previewUrls.forEach((url) => URL.revokeObjectURL(url)), [previewUrls]);
 
   async function exportCapture(action) {
     setBusy(true);
     try {
-      const composed = await composeCapture(capture, layout, template);
+      const sources = layout === 'strip' ? captures : selectedCapture;
+      const composed = await composeCapture(sources, layout, template);
       if (action === 'share') {
         const outcome = await shareBlob(composed, template);
         setMessage(outcome === 'shared' ? 'Đã mở bảng chia sẻ.' : 'Thiết bị không hỗ trợ chia sẻ tệp; ảnh đã được tải xuống.');
@@ -32,10 +35,27 @@ export default function Photobooth({ capture, template, onRetake, onClose }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="relative min-h-[48vh] overflow-hidden border border-tertiary/20 bg-primary">
-        <img src={previewUrl} alt={`Ảnh thử mặt nạ ${template.name}`} className="h-full w-full object-contain" />
+        <img src={previewUrls[selectedIndex]} alt={`Ảnh thử mặt nạ ${template.name}, ảnh ${selectedIndex + 1}`} className="h-full w-full object-contain" />
         <div className="pointer-events-none absolute inset-4 border-2 border-secondary" aria-hidden="true" />
       </div>
       <div className="flex flex-col gap-5">
+        <div>
+          <p className="mb-2 text-xs uppercase tracking-[0.25em] text-secondary">Chọn ảnh đẹp nhất</p>
+          <div className="grid grid-cols-3 gap-2" aria-label="Ba ảnh chụp liên tiếp">
+            {previewUrls.map((url, index) => (
+              <button
+                key={url}
+                type="button"
+                aria-pressed={selectedIndex === index}
+                aria-label={`Chọn ảnh ${index + 1}`}
+                onClick={() => setSelectedIndex(index)}
+                className={`aspect-square overflow-hidden border ${selectedIndex === index ? 'border-secondary' : 'border-tertiary/20'}`}
+              >
+                <img src={url} alt="" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
         <div>
           <p className="mb-2 text-xs uppercase tracking-[0.25em] text-secondary">Chọn khung xuất</p>
           <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Tỷ lệ ảnh Photobooth">

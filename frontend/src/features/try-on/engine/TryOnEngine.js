@@ -79,6 +79,38 @@ function createParserWorker() {
   return new Worker(new URL('./workers/faceParser.worker.js', import.meta.url), { type: 'module' });
 }
 
+export function buildCameraConstraints(facingMode, deviceId) {
+  return {
+    audio: false,
+    video: {
+      ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: facingMode } }),
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 },
+    },
+  };
+}
+
+export function detectTryOnSupport(environment = globalThis) {
+  const missing = [];
+  if (!environment.navigator?.mediaDevices?.getUserMedia) missing.push('camera API');
+  if (!environment.Worker) missing.push('Web Worker');
+  if (!environment.createImageBitmap) missing.push('ImageBitmap');
+
+  try {
+    const canvas = environment.document?.createElement?.('canvas');
+    const context = canvas?.getContext?.('webgl2');
+    if (context) {
+      context.getExtension?.('WEBGL_lose_context')?.loseContext?.();
+    } else {
+      missing.push('WebGL2');
+    }
+  } catch {
+    missing.push('WebGL2');
+  }
+
+  return { supported: missing.length === 0, missing };
+}
+
 export class TryOnEngine {
   constructor({
     video,
@@ -88,6 +120,7 @@ export class TryOnEngine {
     onPerformance = () => {},
     landmarkerWorkerFactory = createLandmarkerWorker,
     parserWorkerFactory = createParserWorker,
+    parserProviderPreference = 'auto',
     getUserMedia = (constraints) => navigator.mediaDevices.getUserMedia(constraints),
   }) {
     this.video = video;
@@ -97,6 +130,7 @@ export class TryOnEngine {
     this.onPerformance = onPerformance;
     this.landmarkerWorkerFactory = landmarkerWorkerFactory;
     this.parserWorkerFactory = parserWorkerFactory;
+    this.parserProviderPreference = parserProviderPreference;
     this.getUserMedia = getUserMedia;
     this.templateLoader = new TemplateLoader();
     this.scheduler = new FrameScheduler();
@@ -110,6 +144,7 @@ export class TryOnEngine {
     this.running = false;
     this.visible = true;
     this.facingMode = 'user';
+    this.deviceId = null;
     this.mirror = true;
     this.compare = false;
     this.intensity = 1;
@@ -118,17 +153,20 @@ export class TryOnEngine {
     this.faceAlpha = 0;
     this.faceState = 'lost';
     this.latestRoi = null;
+    this.pendingParserLandmarks = new Map();
     this.parserAvailable = false;
     this.capabilities = {};
     this.lastPerformanceReportAt = -Infinity;
+    this.parserResultCount = 0;
     this.cancelWorkerReadiness = [];
     this.boundVisibilityChange = this.handleVisibilityChange.bind(this);
   }
 
   async start(template) {
     if (this.running) return this.capabilities;
-    if (!globalThis.navigator?.mediaDevices || !globalThis.Worker || !globalThis.createImageBitmap) {
-      throw new Error('Thiết bị này chưa hỗ trợ camera hoặc Web Worker cần cho Try-On.');
+    const support = detectTryOnSupport();
+    if (!support.supported) {
+      throw new Error(`Thiết bị thiếu ${support.missing.join(', ')} cần cho Try-On.`);
     }
 
     this.running = true;
@@ -158,9 +196,12 @@ export class TryOnEngine {
           if (error.name === 'AbortError') throw error;
           this.parserAvailable = false;
           this.onStatus({ stage: 'fallback', message: 'Face parsing không khả dụng; đang dùng lớp bảo vệ hình học.', detail: error.message });
-          return { executionProvider: 'unavailable' };
+          return { executionProvider: 'unavailable', error: error.message };
         });
-      this.parserWorker.postMessage({ type: 'init' });
+      this.parserWorker.postMessage({
+        type: 'init',
+        preferredProvider: this.parserProviderPreference,
+      });
 
       const [loadedTemplate, landmarkCapability, parserCapability] = await Promise.all([
         this.templateLoader.loadTemplate(template),
@@ -172,6 +213,7 @@ export class TryOnEngine {
       this.capabilities = {
         landmarkerDelegate: landmarkCapability.delegate,
         parserExecutionProvider: parserCapability.executionProvider,
+        parserError: parserCapability.error || null,
         semanticParsing: this.parserAvailable,
       };
       document.addEventListener('visibilitychange', this.boundVisibilityChange);
@@ -185,19 +227,61 @@ export class TryOnEngine {
   }
 
   async openCamera() {
-    stopStream(this.stream);
-    this.stream = await this.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: this.facingMode },
-        width: { ideal: 1280, max: 1920 },
-        height: { ideal: 720, max: 1080 },
-      },
-    });
-    this.video.srcObject = this.stream;
+    const constraints = buildCameraConstraints(this.facingMode, this.deviceId);
+    const previousStream = this.stream;
+    let nextStream;
+    try {
+      nextStream = await this.getUserMedia(constraints);
+    } catch (firstError) {
+      if (!previousStream) throw firstError;
+      stopStream(previousStream);
+      this.stream = null;
+      nextStream = await this.getUserMedia(constraints);
+    }
+    if (previousStream !== nextStream) stopStream(previousStream);
+    this.stream = nextStream;
+    this.video.srcObject = nextStream;
     this.video.muted = true;
     this.video.playsInline = true;
     await this.video.play();
+  }
+
+  async listVideoInputs() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices
+      .filter(({ kind, deviceId }) => kind === 'videoinput' && deviceId)
+      .map(({ deviceId, label }, index) => ({
+        deviceId,
+        label: label || `Camera ${index + 1}`,
+      }));
+  }
+
+  resetTracking() {
+    this.scheduler.reset();
+    this.stabilizer.reset();
+    this.renderer?.clearSegmentation();
+    this.pendingParserLandmarks.clear();
+    this.landmarks = null;
+    this.faceAlpha = 0;
+  }
+
+  async selectCamera(deviceId) {
+    if (!deviceId || deviceId === this.deviceId) return;
+    const previousDeviceId = this.deviceId;
+    this.deviceId = deviceId;
+    try {
+      await this.openCamera();
+      const settings = this.stream?.getVideoTracks?.()[0]?.getSettings?.() || {};
+      if (settings.facingMode) {
+        this.facingMode = settings.facingMode;
+        this.mirror = settings.facingMode === 'user';
+        this.renderer?.setMirror(this.mirror);
+      }
+      this.resetTracking();
+    } catch (error) {
+      this.deviceId = previousDeviceId;
+      throw error;
+    }
   }
 
   handleLandmarkerMessage({ data }) {
@@ -210,6 +294,7 @@ export class TryOnEngine {
     if (data.type !== 'result' || !this.scheduler.finishLandmarks(data.timestamp)) return;
 
     this.performance.record('landmark_latency_ms', performance.now() - data.timestamp);
+    this.performance.recordRate('landmark_hz', data.timestamp);
     const stabilized = this.stabilizer.update(data.landmarks, data.timestamp);
     this.landmarks = stabilized.landmarks;
     this.faceAlpha = stabilized.alpha;
@@ -223,13 +308,30 @@ export class TryOnEngine {
   handleParserMessage({ data }) {
     if (!this.running) return;
     if (data.type === 'error' && data.stage === 'process') {
+      this.pendingParserLandmarks.delete(data.timestamp);
       this.scheduler.failParser();
       this.onStatus({ stage: 'warning', message: 'Face parsing tạm thời bị bỏ qua.', detail: data.message });
       return;
     }
-    if (data.type !== 'result' || !this.scheduler.finishParser(data.timestamp)) return;
-    this.performance.record('parser_latency_ms', performance.now() - data.timestamp);
-    this.renderer?.updateSegmentation(data);
+    if (data.type !== 'result') return;
+    const sourceLandmarks = this.pendingParserLandmarks.get(data.timestamp);
+    this.pendingParserLandmarks.delete(data.timestamp);
+    if (!this.scheduler.finishParser(data.timestamp)) return;
+    const parserLatency = performance.now() - data.timestamp;
+    if (data.timings) {
+      this.performance.record('parser_preprocess_ms', data.timings.preprocessMs);
+      this.performance.record('parser_inference_ms', data.timings.inferenceMs);
+      this.performance.record('parser_postprocess_ms', data.timings.postprocessMs);
+    }
+    this.parserResultCount += 1;
+    if (this.parserResultCount === 1) {
+      this.performance.record('parser_warmup_ms', parserLatency);
+    } else {
+      this.performance.record('parser_latency_ms', parserLatency);
+      this.performance.recordRate('parser_hz', data.timestamp);
+    }
+    this.scheduler.setParserCadence(parserLatency > 115 ? 8 : parserLatency < 70 ? 12 : 10);
+    this.renderer?.updateSegmentation({ ...data, sourceLandmarks });
   }
 
   setFaceState(nextState) {
@@ -258,19 +360,29 @@ export class TryOnEngine {
   async requestParser(timestamp) {
     if (!this.parserAvailable || !this.parserWorker || !this.latestRoi || !this.scheduler.beginParser(timestamp)) return;
     const roi = this.latestRoi;
+    const sourceLandmarks = this.landmarks?.map(({ x, y }) => ({ x, y }));
     const sourceX = Math.max(0, Math.floor(roi.x * this.video.videoWidth));
     const sourceY = Math.max(0, Math.floor(roi.y * this.video.videoHeight));
     const sourceWidth = Math.max(1, Math.min(this.video.videoWidth - sourceX, Math.ceil(roi.width * this.video.videoWidth)));
     const sourceHeight = Math.max(1, Math.min(this.video.videoHeight - sourceY, Math.ceil(roi.height * this.video.videoHeight)));
     try {
-      const bitmap = await createImageBitmap(this.video, sourceX, sourceY, sourceWidth, sourceHeight);
+      const bitmap = await createImageBitmap(
+        this.video,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        { resizeWidth: 128, resizeHeight: 128, resizeQuality: 'medium' },
+      );
       if (!this.running) {
         bitmap.close();
         this.scheduler.failParser();
         return;
       }
+      this.pendingParserLandmarks.set(timestamp, sourceLandmarks);
       this.parserWorker.postMessage({ type: 'process', timestamp, roi, bitmap }, [bitmap]);
     } catch (error) {
+      this.pendingParserLandmarks.delete(timestamp);
       this.scheduler.failParser();
       this.onStatus({ stage: 'warning', message: 'Không tạo được face crop.', detail: error.message });
     }
@@ -320,15 +432,18 @@ export class TryOnEngine {
   }
 
   async flipCamera() {
+    const previousFacingMode = this.facingMode;
     this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
-    this.mirror = this.facingMode === 'user';
-    this.renderer?.setMirror(this.mirror);
-    this.scheduler.reset();
-    this.stabilizer.reset();
-    this.renderer?.clearSegmentation();
-    this.landmarks = null;
-    this.faceAlpha = 0;
-    await this.openCamera();
+    this.deviceId = null;
+    try {
+      await this.openCamera();
+      this.mirror = this.facingMode === 'user';
+      this.renderer?.setMirror(this.mirror);
+      this.resetTracking();
+    } catch (error) {
+      this.facingMode = previousFacingMode;
+      throw error;
+    }
   }
 
   capture(type, quality) {
@@ -369,6 +484,7 @@ export class TryOnEngine {
     this.templateLoader.clear();
     this.scheduler.reset();
     this.stabilizer.reset();
+    this.pendingParserLandmarks.clear();
     return workerCleanup;
   }
 }

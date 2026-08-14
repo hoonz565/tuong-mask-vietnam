@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 import sqlite3
 import math
 import os
@@ -19,6 +20,7 @@ app.add_middleware(
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'masks.db')
 TRY_ON_MANIFEST_PATH = os.path.join(os.path.dirname(__file__), 'try_on_templates.json')
+TRY_ON_METRICS_ENABLED = os.getenv("TRY_ON_METRICS_ENABLED", "false").lower() == "true"
 _mask_cache = None
 _mask_cache_mtime_ns = None
 _try_on_cache = None
@@ -182,6 +184,44 @@ async def get_try_on_template(template_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class TryOnEvent(BaseModel):
+    """Strict pixel-free analytics contract; collection is disabled by default."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    event: Literal[
+        "try_on_opened",
+        "camera_granted",
+        "first_render",
+        "capture_completed",
+        "export_completed",
+        "session_failed",
+    ]
+    release_channel: Literal["internal", "invited_pilot", "technical_pilot", "public"]
+    template_id: str | None = Field(default=None, pattern=r"^[a-z0-9_]+_v[0-9]+$")
+    duration_ms: int | None = Field(default=None, ge=0, le=3_600_000)
+    reason_code: Literal[
+        "permission_denied",
+        "camera_missing",
+        "camera_busy",
+        "unsupported_browser",
+        "model_init_failed",
+        "parser_unavailable",
+        "unknown",
+    ] | None = None
+    parser_provider: Literal["webgpu", "wasm", "unavailable"] | None = None
+    renderer_fps_bucket: Literal["below_15", "15_to_23", "24_to_29", "30_plus"] | None = None
+
+
+@app.post("/api/try-on/events")
+async def post_try_on_event(event: TryOnEvent):
+    if not TRY_ON_METRICS_ENABLED:
+        raise HTTPException(status_code=404, detail="Try-On metrics are disabled")
+    # Intentionally no raw payload persistence in the technical pilot. A future
+    # aggregate sink may receive only this validated, allowlisted model dump.
+    return {"data": {"accepted": True, "event": event.event}, "status": "ok"}
 
 
 # ---------------------------------------------------------------------------

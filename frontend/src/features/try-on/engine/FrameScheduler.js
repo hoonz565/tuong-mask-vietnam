@@ -80,6 +80,7 @@ export class PerformanceTracker {
     this.sampleLimit = sampleLimit;
     this.samples = new Map();
     this.lastRenderTimestamp = null;
+    this.lastEventTimestamps = new Map();
   }
 
   record(name, value) {
@@ -95,6 +96,15 @@ export class PerformanceTracker {
       if (delta > 0 && delta < 1000) this.record('render_fps', 1000 / delta);
     }
     this.lastRenderTimestamp = timestamp;
+  }
+
+  recordRate(name, timestamp) {
+    const previous = this.lastEventTimestamps.get(name);
+    if (previous !== undefined) {
+      const delta = timestamp - previous;
+      if (delta > 0 && delta < 5_000) this.record(name, 1000 / delta);
+    }
+    this.lastEventTimestamps.set(name, timestamp);
   }
 
   summary() {

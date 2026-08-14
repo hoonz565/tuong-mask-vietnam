@@ -8,10 +8,10 @@ import DiscoverMask from './components/gallery/DiscoverMask';
 import GalleryFooter from './components/layout/GalleryFooter';
 import { getAllMasks } from './api/maskService';
 import { getTryOnTemplates } from './api/tryOnService';
+import { resolveTryOnRelease } from './config/tryOnRelease';
 
 const TryOnFeature = lazy(() => import('./features/try-on/TryOnFeature'));
-const TRY_ON_ENABLED = import.meta.env.VITE_TRY_ON_ENABLED !== 'false';
-const TRY_ON_RELEASE_CHANNEL = import.meta.env.VITE_TRY_ON_RELEASE_CHANNEL || 'technical_pilot';
+const TRY_ON_RELEASE = resolveTryOnRelease(import.meta.env);
 
 function App() {
   const [masks, setMasks] = useState([]);
@@ -33,8 +33,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!TRY_ON_ENABLED) return undefined;
-    getTryOnTemplates({ releaseChannel: TRY_ON_RELEASE_CHANNEL })
+    if (!TRY_ON_RELEASE.enabled) return undefined;
+    getTryOnTemplates({ releaseChannel: TRY_ON_RELEASE.releaseChannel })
       .then(setTryOnTemplates)
       .catch((tryOnError) => {
         if (import.meta.env.DEV) console.warn('[Try-On] Template manifest unavailable:', tryOnError.message);
@@ -60,7 +60,7 @@ function App() {
         onTryOn={(templateId) => setRequestedTemplateId(templateId)}
       />
 
-      {TRY_ON_ENABLED && (
+      {TRY_ON_RELEASE.enabled && (
         <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
           <TryOnFeature
             templates={tryOnTemplates}

@@ -2,6 +2,11 @@ import { loadTryOnTextAsset, validateTryOnTemplate } from '../../../../api/tryOn
 
 const DEFAULT_CANONICAL_MESH_PATH = '/try-on/mesh/canonical_face_model.obj';
 const ATLAS_SIZE = 1024;
+const LAYER_GROUP_BY_ID = Object.freeze({
+  base: 'layer-base',
+  eye_motifs: 'layer-eyes',
+  mouth: 'layer-mouth',
+});
 
 export function parseCanonicalObj(source) {
   const textureCoordinates = [];
@@ -74,6 +79,44 @@ function rasterizeAtlas(image, path) {
   return canvas;
 }
 
+async function rasterizeSvgLayer(source, groupId, path) {
+  const parser = new DOMParser();
+  const documentNode = parser.parseFromString(source, 'image/svg+xml');
+  if (documentNode.querySelector('parsererror')) {
+    throw new Error(`Invalid Try-On SVG texture: ${path}`);
+  }
+
+  const layerGroups = Array.from(documentNode.querySelectorAll('g[id^="layer-"]'));
+  const selectedLayer = layerGroups.find((group) => group.id === groupId);
+  if (!selectedLayer) {
+    throw new Error(`Try-On texture ${path} is missing semantic group #${groupId}.`);
+  }
+  layerGroups.forEach((group) => {
+    if (group !== selectedLayer) group.remove();
+  });
+
+  const serialized = new XMLSerializer().serializeToString(documentNode.documentElement);
+  const objectUrl = URL.createObjectURL(new Blob([serialized], { type: 'image/svg+xml' }));
+  try {
+    const image = await loadImage(objectUrl);
+    return rasterizeAtlas(image, `${path}#${groupId}`);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function loadLayeredAtlas(path, expectedSha256, layers) {
+  return loadTryOnTextAsset(path, expectedSha256).then((source) => Promise.all(layers.map(async (layer) => {
+    const groupId = layer.svg_group || LAYER_GROUP_BY_ID[layer.id];
+    if (!groupId) throw new Error(`Try-On layer ${layer.id} has no SVG group binding.`);
+    return {
+      ...layer,
+      svg_group: groupId,
+      image: await rasterizeSvgLayer(source, groupId, path),
+    };
+  })));
+}
+
 export class TemplateLoader {
   constructor({ meshPath = DEFAULT_CANONICAL_MESH_PATH } = {}) {
     this.meshPath = meshPath;
@@ -96,16 +139,16 @@ export class TemplateLoader {
       // and fine Tuong motifs remain stable across browsers.
       this.textureCache.set(
         validated.atlas_url,
-        loadImage(validated.atlas_url).then((image) => rasterizeAtlas(image, validated.atlas_url)),
+        loadLayeredAtlas(validated.atlas_url, validated.asset_sha256, validated.layers),
       );
     }
 
-    const [mesh, image] = await Promise.all([
+    const [mesh, layers] = await Promise.all([
       this.loadMesh(),
       this.textureCache.get(validated.atlas_url),
     ]);
 
-    return { template: validated, mesh, image };
+    return { template: validated, mesh, layers };
   }
 
   clear() {

@@ -1,8 +1,8 @@
 import * as ort from 'onnxruntime-web/webgpu';
 
-const MODEL_PATH = '/models/try-on/face_parser.bisenet.resnet18.int8.28935b49.onnx';
-const INPUT_SIZE = 512;
-const OUTPUT_SIZE = 256;
+const MODEL_PATH = '/models/try-on/face_parser.bisenet.resnet18.int8.128.222a5076.onnx';
+const INPUT_SIZE = 128;
+const OUTPUT_SIZE = INPUT_SIZE;
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
 const ALLOWED_LABELS = new Set([1, 2, 3, 10, 12, 13]);
@@ -12,7 +12,11 @@ let executionProvider = 'wasm';
 let canvas;
 let context;
 
-ort.env.wasm.numThreads = 1;
+// ORT's nested worker pool can deadlock when the inference session already
+// runs inside a dedicated worker (observed in Chrome 151). Keep one WASM
+// thread until the physical-device matrix proves a safe threaded setup.
+const wasmThreads = 1;
+ort.env.wasm.numThreads = wasmThreads;
 ort.env.wasm.proxy = false;
 ort.env.logLevel = 'error';
 
@@ -23,8 +27,12 @@ function ensureCanvas() {
   }
 }
 
-async function createSession() {
-  const providers = globalThis.navigator?.gpu ? ['webgpu', 'wasm'] : ['wasm'];
+async function createSession(preferredProvider = 'auto') {
+  // This QDQ INT8 graph is substantially faster on WASM in the measured
+  // browser baseline. WebGPU remains an explicit diagnostic override.
+  const providers = preferredProvider === 'webgpu' && globalThis.navigator?.gpu
+    ? ['webgpu', 'wasm']
+    : ['wasm'];
   try {
     session = await ort.InferenceSession.create(MODEL_PATH, {
       executionProviders: providers,
@@ -110,8 +118,8 @@ function createAlphaMask(output) {
 self.onmessage = async ({ data }) => {
   if (data.type === 'init') {
     try {
-      await createSession();
-      self.postMessage({ type: 'ready', executionProvider });
+      await createSession(data.preferredProvider);
+      self.postMessage({ type: 'ready', executionProvider, wasmThreads });
     } catch (error) {
       self.postMessage({ type: 'error', stage: 'init', message: error.message });
     }
@@ -122,11 +130,15 @@ self.onmessage = async ({ data }) => {
     const { bitmap, timestamp, roi } = data;
     try {
       if (!session) throw new Error('Face parser is not initialized.');
+      const startedAt = performance.now();
       const input = preprocess(bitmap);
+      const preprocessedAt = performance.now();
       const inputName = session.inputNames[0];
       const results = await session.run({ [inputName]: input });
+      const inferredAt = performance.now();
       const output = results[session.outputNames[0]];
       const alpha = createAlphaMask(output);
+      const completedAt = performance.now();
       self.postMessage({
         type: 'result',
         timestamp,
@@ -134,6 +146,11 @@ self.onmessage = async ({ data }) => {
         width: OUTPUT_SIZE,
         height: OUTPUT_SIZE,
         alpha,
+        timings: {
+          preprocessMs: preprocessedAt - startedAt,
+          inferenceMs: inferredAt - preprocessedAt,
+          postprocessMs: completedAt - inferredAt,
+        },
       }, [alpha.buffer]);
     } catch (error) {
       self.postMessage({ type: 'error', stage: 'process', timestamp, message: error.message });

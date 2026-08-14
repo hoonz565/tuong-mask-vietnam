@@ -7,12 +7,16 @@
       <ellipse cx="512" cy="790" rx="100" ry="34" fill="black"/>
     </mask>
   </defs>
-  <g mask="url(#live-regions)">
+  <g id="layer-base" mask="url(#live-regions)">
     <ellipse cx="512" cy="520" rx="438" ry="500" fill="#050505" fill-opacity=".92"/>
+  </g>
+  <g id="layer-eyes" mask="url(#live-regions)">
     <path d="M232 98 Q358 216 430 410 Q462 526 392 666" fill="none" stroke="#f3efe2" stroke-width="44" stroke-linecap="round"/>
     <path d="M792 98 Q666 216 594 410 Q562 526 632 666" fill="none" stroke="#f3efe2" stroke-width="44" stroke-linecap="round"/>
-    <path d="M430 666 Q370 724 320 810 M594 666 Q654 724 704 810" fill="none" stroke="#f3efe2" stroke-width="38" stroke-linecap="round"/>
     <path d="M512 102 C566 152 567 232 512 276 C457 232 458 152 512 102Z" fill="#f3efe2"/>
     <circle cx="276" cy="564" r="24" fill="#f3efe2"/><circle cx="748" cy="564" r="24" fill="#f3efe2"/>
+  </g>
+  <g id="layer-mouth" mask="url(#live-regions)">
+    <path d="M430 666 Q370 724 320 810 M594 666 Q654 724 704 810" fill="none" stroke="#f3efe2" stroke-width="38" stroke-linecap="round"/>
   </g>
 </svg>
