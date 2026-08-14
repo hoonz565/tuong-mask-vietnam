@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import CustomCursor from './components/layout/CustomCursor';
 import BackgroundText from './components/layout/BackgroundText';
 import Header from './components/layout/Header';
@@ -7,11 +7,18 @@ import MaskGallery from './components/gallery/MaskGallery';
 import DiscoverMask from './components/gallery/DiscoverMask';
 import GalleryFooter from './components/layout/GalleryFooter';
 import { getAllMasks } from './api/maskService';
+import { getTryOnTemplates } from './api/tryOnService';
+
+const TryOnFeature = lazy(() => import('./features/try-on/TryOnFeature'));
+const TRY_ON_ENABLED = import.meta.env.VITE_TRY_ON_ENABLED !== 'false';
+const TRY_ON_RELEASE_CHANNEL = import.meta.env.VITE_TRY_ON_RELEASE_CHANNEL || 'technical_pilot';
 
 function App() {
   const [masks, setMasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tryOnTemplates, setTryOnTemplates] = useState([]);
+  const [requestedTemplateId, setRequestedTemplateId] = useState(null);
 
   useEffect(() => {
     getAllMasks()
@@ -25,6 +32,16 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!TRY_ON_ENABLED) return undefined;
+    getTryOnTemplates({ releaseChannel: TRY_ON_RELEASE_CHANNEL })
+      .then(setTryOnTemplates)
+      .catch((tryOnError) => {
+        if (import.meta.env.DEV) console.warn('[Try-On] Template manifest unavailable:', tryOnError.message);
+      });
+    return undefined;
+  }, []);
+
   return (
     <div className="min-h-screen bg-surface text-tertiary cyber-grid-bg relative overflow-hidden flex flex-col items-center">
       <CustomCursor />
@@ -35,7 +52,23 @@ function App() {
       <Hero />
 
       {/* Main Mask Gallery */}
-      <MaskGallery masks={masks} loading={loading} error={error} />
+      <MaskGallery
+        masks={masks}
+        loading={loading}
+        error={error}
+        tryOnTemplates={tryOnTemplates}
+        onTryOn={(templateId) => setRequestedTemplateId(templateId)}
+      />
+
+      {TRY_ON_ENABLED && (
+        <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
+          <TryOnFeature
+            templates={tryOnTemplates}
+            requestedTemplateId={requestedTemplateId}
+            onRequestHandled={() => setRequestedTemplateId(null)}
+          />
+        </Suspense>
+      )}
       
       {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
       <div id="discover-section" className="w-full mt-16 relative z-10 px-6 md:px-12">

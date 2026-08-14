@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import sqlite3
 import math
 import os
+import json
 
 app = FastAPI(title="Vietnamese Tuong Mask API")
 
@@ -17,8 +18,11 @@ app.add_middleware(
 )
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'masks.db')
+TRY_ON_MANIFEST_PATH = os.path.join(os.path.dirname(__file__), 'try_on_templates.json')
 _mask_cache = None
 _mask_cache_mtime_ns = None
+_try_on_cache = None
+_try_on_cache_mtime_ns = None
 
 # Ensure static/images directory exists
 # os.makedirs(os.path.join(os.path.dirname(__file__), 'static', 'images'), exist_ok=True)
@@ -61,6 +65,67 @@ def get_cached_masks():
     return _mask_cache
 
 
+def get_cached_try_on_templates():
+    """Load and validate the versioned Try-On manifest."""
+    global _try_on_cache, _try_on_cache_mtime_ns
+
+    current_mtime_ns = os.stat(TRY_ON_MANIFEST_PATH).st_mtime_ns
+    if _try_on_cache is None or _try_on_cache_mtime_ns != current_mtime_ns:
+        with open(TRY_ON_MANIFEST_PATH, encoding="utf-8") as manifest_file:
+            manifest = json.load(manifest_file)
+
+        templates = manifest.get("templates", [])
+        required_fields = {
+            "id",
+            "mask_id",
+            "name",
+            "version",
+            "release_channel",
+            "topology_version",
+            "atlas_url",
+            "asset_sha256",
+            "thumbnail_url",
+            "layers",
+            "pose_limits",
+            "cultural_review",
+            "license",
+        }
+
+        template_ids = set()
+        mask_ids = set()
+        for template in templates:
+            missing = required_fields.difference(template)
+            if missing:
+                missing_list = ", ".join(sorted(missing))
+                raise ValueError(f"Try-On template {template.get('id', '<unknown>')} is missing: {missing_list}")
+            if not template["atlas_url"].startswith("/try-on/templates/"):
+                raise ValueError(f"Try-On template {template['id']} has an invalid atlas path")
+            digest = template["asset_sha256"]
+            if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+                raise ValueError(f"Try-On template {template['id']} has an invalid asset SHA-256")
+            if template["topology_version"] != "mediapipe_face_468_v1":
+                raise ValueError(f"Try-On template {template['id']} has an unsupported topology")
+            if not isinstance(template["layers"], list) or not template["layers"]:
+                raise ValueError(f"Try-On template {template['id']} must define at least one layer")
+            pose_limits = template["pose_limits"]
+            if not isinstance(pose_limits, dict) or not isinstance(pose_limits.get("yaw"), (int, float)) or not isinstance(pose_limits.get("pitch"), (int, float)):
+                raise ValueError(f"Try-On template {template['id']} has invalid pose limits")
+            if template["id"] in template_ids:
+                raise ValueError(f"Duplicate Try-On template id: {template['id']}")
+            if template["mask_id"] in mask_ids:
+                raise ValueError(f"Duplicate Try-On mask_id: {template['mask_id']}")
+            template_ids.add(template["id"])
+            mask_ids.add(template["mask_id"])
+
+        _try_on_cache = {
+            "schema_version": manifest.get("schema_version", 1),
+            "templates": templates,
+        }
+        _try_on_cache_mtime_ns = current_mtime_ns
+
+    return _try_on_cache
+
+
 # ---------------------------------------------------------------------------
 # GET /api/masks
 # ---------------------------------------------------------------------------
@@ -82,6 +147,37 @@ async def get_mask(mask_id: str):
         if not mask:
             raise HTTPException(status_code=404, detail="Mask not found")
         return mask
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# GET /api/try-on/templates
+# GET /api/try-on/templates/{template_id}
+# ---------------------------------------------------------------------------
+@app.get("/api/try-on/templates")
+async def get_try_on_templates():
+    try:
+        manifest = get_cached_try_on_templates()
+        return {
+            "data": manifest["templates"],
+            "schema_version": manifest["schema_version"],
+            "status": "ok",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/try-on/templates/{template_id}")
+async def get_try_on_template(template_id: str):
+    try:
+        templates = get_cached_try_on_templates()["templates"]
+        template = next((item for item in templates if item["id"] == template_id), None)
+        if not template:
+            raise HTTPException(status_code=404, detail="Try-On template not found")
+        return {"data": template, "status": "ok"}
     except HTTPException:
         raise
     except Exception as e:

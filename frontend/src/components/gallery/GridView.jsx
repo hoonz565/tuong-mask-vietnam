@@ -1,7 +1,4 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-
-export default function GridView({ masks, setSelectedMask, containerVariants, itemVariants }) {
+export default function GridView({ masks, setSelectedMask }) {
   return (
     <main
       className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-0 w-full"

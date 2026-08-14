@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "release_channel": "technical_pilot",
+  "models": [
+    {
+      "id": "mediapipe_face_landmarker_float16_v1",
+      "url": "/models/try-on/face_landmarker.float16.v1.64184e22.task",
+      "bytes": 3758596,
+      "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+      "upstream": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      "deployment_review": "pending_final_artifact_license_review"
+    },
+    {
+      "id": "bisenet_resnet18_face_parser_int8_rnd_v1",
+      "url": "/models/try-on/face_parser.bisenet.resnet18.int8.28935b49.onnx",
+      "bytes": 13499427,
+      "sha256": "28935b494a29a8fa4722ccda0ad785d7e742d96d38e04199b744609333eed38a",
+      "upstream": "https://github.com/yakhyo/face-parsing",
+      "deployment_review": "research_only_non_commercial_data_dependency"
+    }
+  ],
+  "total_model_bytes": 17258023
+}

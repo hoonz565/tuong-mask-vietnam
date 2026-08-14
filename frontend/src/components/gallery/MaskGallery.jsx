@@ -4,7 +4,7 @@ import GridView from './GridView';
 import DetailedView from './DetailedView';
 import GalleryToolbar from '../layout/GalleryToolbar';
 
-export default function MaskGallery({ masks, loading, error }) {
+export default function MaskGallery({ masks, loading, error, tryOnTemplates = [], onTryOn }) {
   const [selectedMask, setSelectedMask] = useState(null);
 
 
@@ -65,6 +65,8 @@ export default function MaskGallery({ masks, loading, error }) {
             selectedMask={selectedMask}
             setSelectedMask={setSelectedMask}
             masks={masks}
+            tryOnTemplate={tryOnTemplates.find((template) => template.mask_id === selectedMask.id)}
+            onTryOn={onTryOn}
           />
         ) : (
           <motion.div

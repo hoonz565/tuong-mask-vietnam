@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><mask id="live"><rect width="1024" height="1024" fill="white"/><path d="M170 430 Q300 350 438 426 Q320 516 180 478Z" fill="black"/><path d="M586 426 Q724 350 854 430 L844 478 Q704 516 586 426Z" fill="black"/><ellipse cx="512" cy="790" rx="96" ry="35" fill="black"/></mask></defs>
+  <g mask="url(#live)">
+    <ellipse cx="512" cy="520" rx="438" ry="500" fill="#f4f0e5" fill-opacity=".94"/>
+    <path d="M270 110 Q404 158 462 342 Q512 250 562 342 Q620 158 754 110 Q664 336 512 412 Q360 336 270 110Z" fill="#080808"/>
+    <path d="M150 360 Q276 242 438 394 Q316 316 182 472Z M874 360 Q748 242 586 394 Q708 316 842 472Z" fill="#080808"/>
+    <path d="M166 520 Q116 542 90 592 M188 532 Q132 578 116 638 M858 520 Q908 542 934 592 M836 532 Q892 578 908 638" fill="none" stroke="#080808" stroke-width="24" stroke-linecap="round"/>
+    <path d="M468 486 Q512 532 556 486 M474 536 Q512 570 550 536" fill="none" stroke="#080808" stroke-width="15"/>
+    <path d="M366 704 Q286 802 214 830 Q338 946 446 828 M658 704 Q738 802 810 830 Q686 946 578 828" fill="#080808"/>
+    <path d="M398 934 Q512 874 626 934 L660 1024 H364Z" fill="#080808"/>
+  </g>
+</svg>
