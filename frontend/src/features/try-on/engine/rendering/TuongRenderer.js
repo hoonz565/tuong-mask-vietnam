@@ -99,7 +99,7 @@ function createTexture(gl, filter = gl.LINEAR) {
   return texture;
 }
 
-function poseOpacity(pose, limits) {
+export function poseOpacity(pose, limits) {
   if (!pose || !limits) return 1;
   const yawRatio = Math.abs(pose.yaw) / Math.max(1, limits.yaw);
   const pitchRatio = Math.abs(pose.pitch) / Math.max(1, limits.pitch);
@@ -137,6 +137,83 @@ export function createReprojectedParseUvs(mesh, sourceLandmarks, roi) {
     parseUvs[index * 2 + 1] = (landmark.y - roi.y) / roi.height;
   }
   return parseUvs;
+}
+
+function signedTriangleArea(triangle) {
+  return (
+    (triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y)
+    - (triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y)
+  );
+}
+
+function stableTriangle(triangle) {
+  const doubledArea = Math.abs(signedTriangleArea(triangle));
+  const edgeA = Math.hypot(triangle[1].x - triangle[0].x, triangle[1].y - triangle[0].y);
+  const edgeB = Math.hypot(triangle[2].x - triangle[1].x, triangle[2].y - triangle[1].y);
+  const edgeC = Math.hypot(triangle[0].x - triangle[2].x, triangle[0].y - triangle[2].y);
+  const shortestEdge = Math.min(edgeA, edgeB, edgeC);
+  const edgeRatio = Math.max(edgeA, edgeB, edgeC) / Math.max(shortestEdge, 1e-9);
+  return doubledArea > 0.000001 && doubledArea < 0.08 && edgeRatio < 18;
+}
+
+export function buildMeshFrameData(mesh, landmarks, cover, pose, mirror) {
+  const count = mesh?.vertexIndices?.length || 0;
+  const positions = new Float32Array(count * 2);
+  const visibility = new Float32Array(count);
+  const yaw = pose?.yaw || 0;
+  let stableTriangleCount = 0;
+  let orientationCulledTriangleCount = 0;
+
+  for (let index = 0; index < count; index += 3) {
+    const triangle = [];
+    for (let corner = 0; corner < 3; corner += 1) {
+      const landmark = landmarks?.[mesh.vertexIndices[index + corner]];
+      if (!landmark) {
+        triangle.length = 0;
+        break;
+      }
+      triangle.push(landmarkToClip(landmark, cover, mirror));
+    }
+    const geometryStable = triangle.length === 3 && stableTriangle(triangle);
+    const uvOffset = index * 2;
+    const uvSignedArea = geometryStable ? (
+      (mesh.uvCoordinates[uvOffset + 2] - mesh.uvCoordinates[uvOffset])
+      * (mesh.uvCoordinates[uvOffset + 5] - mesh.uvCoordinates[uvOffset + 1])
+      - (mesh.uvCoordinates[uvOffset + 4] - mesh.uvCoordinates[uvOffset])
+      * (mesh.uvCoordinates[uvOffset + 3] - mesh.uvCoordinates[uvOffset + 1])
+    ) : 0;
+    const orientationStable = geometryStable && (
+      signedTriangleArea(triangle)
+      * uvSignedArea
+      * (mirror ? -1 : 1)
+    ) > 0;
+    if (geometryStable && !orientationStable) orientationCulledTriangleCount += 1;
+    const validTriangle = geometryStable && orientationStable;
+    if (validTriangle) stableTriangleCount += 1;
+
+    for (let corner = 0; corner < 3; corner += 1) {
+      const expandedIndex = index + corner;
+      const landmarkIndex = mesh.vertexIndices[expandedIndex];
+      const landmark = landmarks?.[landmarkIndex];
+      const point = triangle[corner] || { x: 0, y: 0 };
+      positions[expandedIndex * 2] = point.x;
+      positions[expandedIndex * 2 + 1] = point.y;
+      let sideFade = 1;
+      if (landmark && Math.abs(yaw) > 22) {
+        const farSide = yaw > 0 ? landmark.x < 0.38 : landmark.x > 0.62;
+        if (farSide) sideFade = Math.max(0.3, 1 - (Math.abs(yaw) - 22) / 35);
+      }
+      visibility[expandedIndex] = validTriangle ? sideFade : 0;
+    }
+  }
+
+  return {
+    positions,
+    visibility,
+    stableTriangleCount,
+    orientationCulledTriangleCount,
+    triangleCount: count / 3,
+  };
 }
 
 export class TuongRenderer {
@@ -268,38 +345,13 @@ export class TuongRenderer {
   }
 
   updateMeshBuffers(landmarks, cover, pose) {
-    const count = this.mesh.vertexIndices.length;
-    const positions = new Float32Array(count * 2);
-    const visibility = new Float32Array(count);
-    const yaw = pose?.yaw || 0;
-
-    for (let index = 0; index < count; index += 3) {
-      const triangle = [];
-      for (let corner = 0; corner < 3; corner += 1) {
-        const vertexIndex = this.mesh.vertexIndices[index + corner];
-        const landmark = landmarks[vertexIndex];
-        triangle.push(landmarkToClip(landmark, cover, this.mirror));
-      }
-      const area = Math.abs(
-        (triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y)
-        - (triangle[2].x - triangle[0].x) * (triangle[1].y - triangle[0].y),
-      );
-      const validTriangle = area > 0.000001 && area < 0.08;
-
-      for (let corner = 0; corner < 3; corner += 1) {
-        const expandedIndex = index + corner;
-        const landmarkIndex = this.mesh.vertexIndices[expandedIndex];
-        const landmark = landmarks[landmarkIndex];
-        positions[expandedIndex * 2] = triangle[corner].x;
-        positions[expandedIndex * 2 + 1] = triangle[corner].y;
-        let sideFade = 1;
-        if (Math.abs(yaw) > 22) {
-          const farSide = yaw > 0 ? landmark.x < 0.38 : landmark.x > 0.62;
-          if (farSide) sideFade = Math.max(0.3, 1 - (Math.abs(yaw) - 22) / 35);
-        }
-        visibility[expandedIndex] = validTriangle ? sideFade : 0;
-      }
-    }
+    const { positions, visibility } = buildMeshFrameData(
+      this.mesh,
+      landmarks,
+      cover,
+      pose,
+      this.mirror,
+    );
 
     const gl = this.gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.maskPositionBuffer);

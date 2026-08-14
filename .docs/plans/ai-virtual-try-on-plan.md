@@ -480,7 +480,7 @@ Do not collect raw camera images, face crops, landmarks or inferred demographic 
 
 - [x] Finalize schema, authoring guide and automated manifest validator.
 - [x] Produce 6 pilot templates, then expand to 8–12 only after the workflow is stable.
-- [ ] Validate neutral, blink, smile, jaw-open, yaw and pitch fixtures for every template.
+- [x] Validate neutral, blink, smile, jaw-open, yaw and pitch fixtures for every template.
 - [ ] Complete cultural, copyright and attribution sign-off.
 - [ ] Link eligible gallery masks to approved try-on template IDs.
 

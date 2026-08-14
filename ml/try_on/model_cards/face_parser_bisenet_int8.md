@@ -22,7 +22,7 @@ The browser worker uses the model only to clip a geometry-driven Tuồng overlay
 - ONNX checker and CPU execution smoke tests passed; the shipped artifact returned `[1, 19, 128, 128]`.
 - On deterministic synthetic input, specialized FP32/INT8 pixel argmax agreement was `0.917542`; mean absolute logit error was `0.269675`. This is a compatibility signal, not real-image accuracy.
 - Native CPU baseline (`onnxruntime 1.22.1`, Windows 11, 22 logical processors, 2 warm-ups + 20 measured runs): median `5.19 ms`, p95 `5.73 ms`, range `3.99–5.81 ms`; session load `97.42 ms`.
-- Production-build Chrome 151 fake-camera baseline, default WASM: parser `8.34 Hz`, end-to-end p95 `117.92 ms`, warm-up `197.27 ms`; median preprocess/inference/postprocess `21.02/92.91/4.27 ms`; render loop `100 fps` in the headless harness.
+- Production-build Chrome 151 fake-camera runs, default single-threaded WASM: parser `8.34–9.09 Hz`, end-to-end p95 `117.92–157.70 ms`, warm-up `197.27–238.93 ms`; median preprocess/inference/postprocess ranges `10.99–21.02/86.54–92.91/3.55–4.27 ms`; render loop about `100 fps` in the headless harness. Cadence passes, but latency does not reliably meet a <125 ms technical threshold.
 - The same 128 graph on the explicit WebGPU diagnostic path measured `0.69 Hz`, p95 `1,834.81 ms`, and median inference `1,568.56 ms`. Evidence therefore overrides the initial provider-order hypothesis for this artifact.
 - A four-way 512×512 candidate/precision study still selected ResNet-18 INT8 over ResNet-34; see the technical validation report for hashes and results.
 

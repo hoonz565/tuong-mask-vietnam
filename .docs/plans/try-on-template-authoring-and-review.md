@@ -8,6 +8,8 @@ The canonical SVG atlas must expose three top-level semantic groups: `layer-base
 
 Review the neutral, blink, brow raise, smile, jaw-open, yaw ±35° and pitch ±25° fixtures. Reject the asset for inverted triangles, torn strokes, occluded eyes/teeth, character motif mixing, unintended skin-tone changes or attribution mismatch.
 
+Run `npm run test:fixtures` from `frontend/` before submitting an asset for review. The validator executes the production mesh-buffer algorithm in mirrored and unmirrored modes over neutral, blink, smile, jaw-open, brow-raise, yaw-left/right and pitch-up/down for every manifest template, rejects visible inversions or excessive stretch, and confirms conservative far-side fading. This technical check does not replace the cultural review below.
+
 ## Cultural approval checklist
 
 - Character name, type, colours, motifs and lore match approved source material.

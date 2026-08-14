@@ -37,6 +37,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
   const [intensity, setIntensity] = useState(1);
   const [cameraDevices, setCameraDevices] = useState([]);
   const [activeDeviceId, setActiveDeviceId] = useState('');
+  const [renderedTemplateId, setRenderedTemplateId] = useState('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
@@ -132,6 +133,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
     engineRef.current = engine;
     try {
       const nextCapabilities = await engine.start(template);
+      setRenderedTemplateId(template.id);
       setCapabilities(nextCapabilities);
       try {
         const devices = await engine.listVideoInputs();
@@ -151,7 +153,10 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
   async function selectTemplate(nextTemplate) {
     setTemplate(nextTemplate);
     try {
-      if (engineRef.current) await engineRef.current.setTemplate(nextTemplate);
+      if (engineRef.current) {
+        await engineRef.current.setTemplate(nextTemplate);
+        setRenderedTemplateId(nextTemplate.id);
+      }
     } catch (error) {
       setStatus(error.message);
     }
@@ -237,6 +242,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
       aria-busy={isLoading || state.value === TRY_ON_STATES.CAPTURING}
       data-state={state.value}
       data-parser-provider={capabilities?.parserExecutionProvider || 'pending'}
+      data-rendered-template-id={renderedTemplateId || 'pending'}
       data-parser-error={capabilities?.parserError || ''}
       data-render-fps={performanceSummary?.render_fps?.median?.toFixed(2) || 'pending'}
       data-parser-hz={performanceSummary?.parser_hz?.median?.toFixed(2) || 'pending'}

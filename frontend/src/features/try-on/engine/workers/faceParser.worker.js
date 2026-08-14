@@ -12,9 +12,8 @@ let executionProvider = 'wasm';
 let canvas;
 let context;
 
-// ORT's nested worker pool can deadlock when the inference session already
-// runs inside a dedicated worker (observed in Chrome 151). Keep one WASM
-// thread until the physical-device matrix proves a safe threaded setup.
+// Two and four nested ORT threads timed out during Chrome 151 session creation.
+// Keep one thread until a browser/runtime update passes the device matrix.
 const wasmThreads = 1;
 ort.env.wasm.numThreads = wasmThreads;
 ort.env.wasm.proxy = false;

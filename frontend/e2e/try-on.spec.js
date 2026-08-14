@@ -44,8 +44,8 @@ test('live layered Try-On -> burst selection -> Photobooth download', async ({ p
   await expect(dialog.getByText(/Xử lý trên thiết bị/i)).toBeVisible();
   await expect.poll(
     async () => Number(await dialog.getAttribute('data-parser-samples')),
-    { timeout: 30_000 },
-  ).toBeGreaterThanOrEqual(5);
+    { timeout: 45_000 },
+  ).toBeGreaterThanOrEqual(20);
   const runtimeMetrics = {
     parserProvider: await dialog.getAttribute('data-parser-provider'),
     renderFps: Number(await dialog.getAttribute('data-render-fps')),
@@ -71,6 +71,30 @@ test('live layered Try-On -> burst selection -> Photobooth download', async ({ p
     (canvas) => canvas.toDataURL('image/png').length,
   );
   expect(canvasDataLength).toBeGreaterThan(10_000);
+
+  const templateMatrix = [
+    ['Khổng Minh', 'khong_minh_v1'],
+    ['Lý Phụng Đình — Xanh', 'ly_phung_dinh_blue_v1'],
+    ['Quan Công', 'quan_cong_v1'],
+    ['Tào Tháo', 'tao_thao_v1'],
+    ['Trương Phi', 'truong_phi_v1'],
+    ['Ác Ba', 'ac_ba_v1'],
+    ['Đào Tam Xuân', 'dao_tam_xuan_v1'],
+    ['Bao Công', 'bao_cong_v1'],
+  ];
+  let previousFrame = await dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
+    .evaluate((canvas) => canvas.toDataURL('image/png'));
+  for (const [name, id] of templateMatrix) {
+    await dialog.getByRole('button', { name: `Thử mặt nạ ${name}` }).click();
+    await expect(dialog).toHaveAttribute('data-rendered-template-id', id);
+    await expect.poll(
+      () => dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
+        .evaluate((canvas) => canvas.toDataURL('image/png')),
+    ).not.toBe(previousFrame);
+    const nextFrame = await dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
+      .evaluate((canvas) => canvas.toDataURL('image/png'));
+    previousFrame = nextFrame;
+  }
 
   await dialog.getByRole('button', { name: /Chụp Photobooth/i }).click();
   await expect(dialog).toHaveAttribute('data-state', 'review', { timeout: 15_000 });

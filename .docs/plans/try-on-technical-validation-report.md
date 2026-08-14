@@ -8,6 +8,7 @@
 
 - Backend manifest validator: pass for 8 immutable technical-pilot templates, including file existence and SHA-256 equality.
 - Frontend unit suite: pass for scheduling/backpressure, stale results, temporal hold/fade, pose matrix conversion, canonical mesh topology, mirroring/object-cover transforms, state transitions, manifest security and bounded worker cleanup.
+- Deterministic template fixture matrix: pass for all 8 templates across neutral, blink, smile, jaw-open, brow-raise, yaw-left/right and pitch-up/down in mirrored and unmirrored modes (144 checks). It invokes the same mesh-frame function as the live renderer; minimum stable-triangle ratio was `0.982183`, no inverted triangle remained visible, and at most 14 unsafe triangles were culled in a fixture.
 - ESLint: pass.
 - Vite production build: pass with the Try-On feature in a lazy chunk.
 - `npm audit`: 0 known vulnerabilities after compatible dependency updates.
@@ -67,6 +68,7 @@ Chrome 151.0.7922.138 was run headlessly against the production Vite build with 
 - Manifest loaded 8 templates and both workers loaded their content-hashed local model assets.
 - The session reached `live` with semantic parsing available.
 - Bao Công rendered as a non-rigid face mesh with the black/white motifs visible; live eyes, teeth and mouth opening remained visible.
+- The live production test switched through all 8 immutable template IDs, waited for each layered atlas to become the renderer's active template, and verified that every composited canvas frame changed before returning to Bao Công for capture.
 - SVG atlases were rasterized at canonical 1024×1024 resolution before WebGL upload; no `texImage2D`/bad-image-data error remained.
 - Capture transitioned `live -> capturing -> review`.
 - Photobooth exposed square, portrait and photo-strip layouts; portrait selection exported `bao-cong-try-on.png` without download failure.
@@ -81,10 +83,10 @@ After five steady parser samples, the selected 128×128 QDQ graph and pre-resize
 
 | Provider | Parser rate | End-to-end p95 | Warm-up | Median preprocess / inference / postprocess |
 |---|---:|---:|---:|---:|
-| WASM, 1 thread (default) | 8.34 Hz | 117.92 ms | 197.27 ms | 21.02 / 92.91 / 4.27 ms |
+| WASM, 1 thread (default), observed runs | 8.34–9.09 Hz | 117.92–157.70 ms | 197.27–238.93 ms | 10.99–21.02 / 86.54–92.91 / 3.55–4.27 ms |
 | WebGPU diagnostic override | 0.69 Hz | 1,834.81 ms | 3,866.37 ms | 19.17 / 1,568.56 / 4.99 ms |
 
-The WASM result passes the plan's ≥8 Hz parser cadence and <125 ms steady p95 target in this desktop harness. WebGPU is not the default for this QDQ INT8 graph because measured behavior is materially worse. Four-thread WASM session creation timed out inside the already dedicated parser worker, so the pilot pins one thread pending physical-device validation. The render loop measured about 100 fps under the headless virtual display; that number is not a phone FPS claim.
+WASM consistently passes the plan's ≥8 Hz parser cadence while the render loop remains about 100 fps under the headless virtual display. It does **not** reliably pass a <125 ms end-to-end parser p95: a later 20-sample run measured `157.70 ms`, mostly outside the worker's measured inference phases. WebGPU is not the default for this QDQ INT8 graph because measured behavior is materially worse. Two- and four-thread WASM session creation both timed out inside the already dedicated parser worker, so the pilot pins one thread pending a browser/runtime update and physical-device validation. None of these desktop figures is a phone FPS or motion-to-render launch claim.
 
 ## Gates still requiring people or external devices
 
