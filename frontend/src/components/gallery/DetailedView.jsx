@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Scan } from 'lucide-react';
-import { API_BASE } from '../../api/client';
+import { ScanFace, X } from 'lucide-react';
 
-export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
+export default function DetailedView({ selectedMask, setSelectedMask, masks, tryOnTemplate, onTryOn }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -122,6 +121,15 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks }) {
                   {selectedMask.description}
                 </p>
               </div>
+              {tryOnTemplate && (
+                <button
+                  type="button"
+                  onClick={() => onTryOn?.(tryOnTemplate.id)}
+                  className="mt-7 inline-flex items-center gap-2 bg-secondary px-5 py-3 text-xs uppercase tracking-widest text-primary"
+                >
+                  <ScanFace size={17} /> Thử mặt nạ này
+                </button>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

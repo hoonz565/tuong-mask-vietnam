@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><mask id="live"><rect width="1024" height="1024" fill="white"/><path d="M168 432 Q300 350 436 426 Q320 514 178 478Z" fill="black"/><path d="M588 426 Q724 350 856 432 L846 478 Q704 514 588 426Z" fill="black"/><ellipse cx="512" cy="790" rx="100" ry="36" fill="black"/></mask></defs>
+  <g id="layer-base" mask="url(#live)">
+    <ellipse cx="512" cy="520" rx="438" ry="500" fill="#050505" fill-opacity=".94"/>
+  </g>
+  <g id="layer-eyes" mask="url(#live)">
+    <path d="M74 234 Q262 278 390 410 Q252 344 128 516 Q90 402 74 234Z M950 234 Q762 278 634 410 Q772 344 896 516 Q934 402 950 234Z" fill="#f3efe2"/>
+    <path d="M208 224 Q318 150 444 386 Q342 282 250 470Z M816 224 Q706 150 580 386 Q682 282 774 470Z" fill="#f3efe2"/>
+    <path d="M160 500 Q246 434 410 486 Q292 516 196 612Z M864 500 Q778 434 614 486 Q732 516 828 612Z" fill="#f3efe2"/>
+    <path d="M154 600 Q264 622 390 714 Q270 684 184 778Z M870 600 Q760 622 634 714 Q754 684 840 778Z" fill="#f3efe2"/>
+  </g>
+  <g id="layer-mouth" mask="url(#live)">
+    <path d="M400 706 Q512 648 624 706 Q568 754 512 756 Q456 754 400 706Z" fill="#f3efe2"/>
+    <path d="M324 804 Q512 910 700 804 Q632 982 512 990 Q392 982 324 804Z" fill="#f3efe2"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence, useAnimationFrame, useMotionValue } from 'framer-motion';
 
 /* ═══════════════════════════════════════════════════════════════════

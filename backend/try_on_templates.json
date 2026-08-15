@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "bao_cong_v1",
+      "mask_id": "bao_cong1",
+      "name": "Bao Công",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/bao_cong/v1/atlas.svg",
+      "asset_sha256": "92ec60ec4a9674d6b4904581963ae1daed7f330de34ce5bdce4fdd754dcd662e",
+      "thumbnail_url": "/static/images/5.png",
+      "accent": "#ebe5ce",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "bao_cong1"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "khong_minh_v1",
+      "mask_id": "khong_minh",
+      "name": "Khổng Minh",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/khong_minh/v1/atlas.svg",
+      "asset_sha256": "11a9fa7a7888263841aee819ea5b1dc1f7cf295d70ec9bad4f74232323e524a7",
+      "thumbnail_url": "/static/images/37.png",
+      "accent": "#ebe5ce",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "khong_minh"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "ly_phung_dinh_blue_v1",
+      "mask_id": "ly_phung_dinh_blue",
+      "name": "Lý Phụng Đình — Xanh",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/ly_phung_dinh_blue/v1/atlas.svg",
+      "asset_sha256": "72bfa4e5bbd2e9dad79f073468a56e328834eb1577a36f8b88bda151e9e61b70",
+      "thumbnail_url": "/static/images/50.png",
+      "accent": "#7394cf",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 32, "pitch": 22},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "ly_phung_dinh_blue"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "quan_cong_v1",
+      "mask_id": "quan_cong",
+      "name": "Quan Công",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/quan_cong/v1/atlas.svg",
+      "asset_sha256": "a4f9d7691fd05d5c70a4488bad18113111436c35c408020a103bdf025bfd5155",
+      "thumbnail_url": "/static/images/69.png",
+      "accent": "#c92a22",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "quan_cong"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "tao_thao_v1",
+      "mask_id": "tao_thao",
+      "name": "Tào Tháo",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/tao_thao/v1/atlas.svg",
+      "asset_sha256": "35444d6860b85919399b66bb97fae2708812a7126e71917ddec80c3ae0e54059",
+      "thumbnail_url": "/static/images/75.png",
+      "accent": "#ebe5ce",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "tao_thao"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "truong_phi_v1",
+      "mask_id": "truong_phi",
+      "name": "Trương Phi",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/truong_phi/v1/atlas.svg",
+      "asset_sha256": "6cdbec16ff2af52070a788264bab5f6280c5b648072aa7829c8d0c4f142d3cf7",
+      "thumbnail_url": "/static/images/109.png",
+      "accent": "#ebe5ce",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 32, "pitch": 22},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "truong_phi"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "ac_ba_v1",
+      "mask_id": "ac_ba",
+      "name": "Ác Ba",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/ac_ba/v1/atlas.svg",
+      "asset_sha256": "e8a9b0cfd5e8a174f5af814b5dcb777174a94e050e08f1597c8542de9af67143",
+      "thumbnail_url": "/static/images/1.png",
+      "accent": "#b8b8b8",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "ac_ba"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    },
+    {
+      "id": "dao_tam_xuan_v1",
+      "mask_id": "dao_tam_xuan",
+      "name": "Đào Tam Xuân",
+      "version": 1,
+      "release_channel": "technical_pilot",
+      "topology_version": "mediapipe_face_468_v1",
+      "atlas_url": "/try-on/templates/dao_tam_xuan/v1/atlas.svg",
+      "asset_sha256": "dd2ac5a1ec7ff319e8f5d3fbfddde475bc988d2ca15ea96cdec17fa945384678",
+      "thumbnail_url": "/static/images/18.png",
+      "accent": "#ff1919",
+      "layers": [
+        {"id": "base", "region": "face", "blend_mode": "normal", "occlusion_policy": "semantic_face"},
+        {"id": "eye_motifs", "region": "eyes_brows", "blend_mode": "normal", "occlusion_policy": "preserve_live_eyes"},
+        {"id": "mouth", "region": "mouth_chin", "blend_mode": "normal", "occlusion_policy": "preserve_mouth_cavity"}
+      ],
+      "pose_limits": {"yaw": 35, "pitch": 25},
+      "cultural_review": {"status": "pending_expert_review", "source_mask_id": "dao_tam_xuan"},
+      "license": {"asset_owner": "project", "usage": "technical_pilot"}
+    }
+  ]
+}

@@ -13,7 +13,7 @@ const usedPoints = (s) => STAT_KEYS.reduce((sum, k) => sum + s[k], 0);
 /* ═══════════════════════════════════════════════════════════════════
    CORNER BRACKET BOX — reusable container with L-shaped corners
    ═══════════════════════════════════════════════════════════════════ */
-function BracketBox({ children, label, labelAlign = 'left', valueColor = 'text-tertiary', className = '' }) {
+function BracketBox({ children, label, labelAlign = 'left', className = '' }) {
   const isLeft = labelAlign === 'left';
   return (
     <div className={`relative border border-tertiary/20 p-6 mt-6 ${className}`}>
@@ -162,7 +162,7 @@ function RadarChart({ stats }) {
 
       {/* Vertex dots */}
       {pts.map((p, i) => (
-        <motion.circle key={i} r="3.5" fill="#ff1919" animate={{ cx: p.x, cy: p.y }}
+        <motion.circle key={i} cx={p.x} cy={p.y} r="3.5" fill="#ff1919" initial={{ cx: p.x, cy: p.y }} animate={{ cx: p.x, cy: p.y }}
           transition={{ type: 'spring', stiffness: 200, damping: 25 }}
           style={{ filter: 'drop-shadow(0 0 5px rgba(255,25,25,0.8))' }} />
       ))}
@@ -180,7 +180,7 @@ function RadarChart({ stats }) {
 /* ═══════════════════════════════════════════════════════════════════
    STAGE 1: HUD ADJUSTMENT DASHBOARD
    ═══════════════════════════════════════════════════════════════════ */
-function AdjustStage({ onExecute, isUnlocked, setIsUnlocked, onExit }) {
+function AdjustStage({ onExecute, isUnlocked, setIsUnlocked }) {
   const [stats, setStats] = useState(defaultStats);
   const spent = usedPoints(stats);
   const remaining = TOTAL_POINTS - spent;
@@ -668,7 +668,6 @@ export default function DiscoverMask() {
             onExecute={handleExecute}
             isUnlocked={isUnlocked}
             setIsUnlocked={setIsUnlocked}
-            onExit={handleExit}
           />
         )}
         {stage === 'loading' && <LoadingStage key="loading" />}

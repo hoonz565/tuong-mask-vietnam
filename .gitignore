@@ -7,7 +7,10 @@ backend/masks.db-journal
 # Node
 frontend/node_modules/
 frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
 
 # OS
 .DS_Store
 .env
+.tmp/

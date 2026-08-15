@@ -1,0 +1,5 @@
+# Immutable Try-On hashes are computed over LF-normalized text bytes.
+backend/try_on_templates.json text eol=lf
+frontend/public/try-on/templates/**/*.svg text eol=lf
+frontend/public/try-on/mesh/*.obj text eol=lf
+frontend/public/models/try-on/manifest.json text eol=lf

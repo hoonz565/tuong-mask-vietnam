@@ -1,6 +1,4 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Grid, List } from 'lucide-react';
 
 export default function GalleryToolbar({ total }) {
   return (
