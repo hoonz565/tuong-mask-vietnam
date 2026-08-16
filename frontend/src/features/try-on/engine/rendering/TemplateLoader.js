@@ -2,6 +2,13 @@ import { loadTryOnTextAsset, validateTryOnTemplate } from '../../../../api/tryOn
 
 const DEFAULT_CANONICAL_MESH_PATH = '/try-on/mesh/canonical_face_model.obj';
 const ATLAS_SIZE = 1024;
+const MAX_CACHED_TEXTURES = 12;
+const CANONICAL_EYE_Y = 0.37851;
+const DEFAULT_SOURCE_EYE_Y = 0.465;
+const GALLERY_EYE_CUTOUT_PROFILE = Object.freeze([
+  Object.freeze({ centerX: 0.34445, centerY: 0.37851, innerRadiusX: 0.108, innerRadiusY: 0.052, outerRadiusX: 0.145, outerRadiusY: 0.084 }),
+  Object.freeze({ centerX: 0.65556, centerY: 0.37851, innerRadiusX: 0.108, innerRadiusY: 0.052, outerRadiusX: 0.145, outerRadiusY: 0.084 }),
+]);
 const LAYER_GROUP_BY_ID = Object.freeze({
   base: 'layer-base',
   eye_motifs: 'layer-eyes',
@@ -79,6 +86,235 @@ function rasterizeAtlas(image, path) {
   return canvas;
 }
 
+export function findOpaqueBounds(imageData, alphaThreshold = 8) {
+  const { data, width, height } = imageData;
+  let left = width;
+  let top = height;
+  let right = -1;
+  let bottom = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (data[(y * width + x) * 4 + 3] <= alphaThreshold) continue;
+      left = Math.min(left, x);
+      top = Math.min(top, y);
+      right = Math.max(right, x);
+      bottom = Math.max(bottom, y);
+    }
+  }
+
+  return right >= left && bottom >= top
+    ? { x: left, y: top, width: right - left + 1, height: bottom - top + 1 }
+    : { x: 0, y: 0, width, height };
+}
+
+export function calculateGalleryCrop(bounds, imageWidth, imageHeight) {
+  const crop = { ...bounds };
+  const aspect = crop.height / Math.max(1, crop.width);
+
+  // A few archive images include an entire headdress/costume. Keep the face-
+  // bearing upper section instead of compressing the full costume into a face.
+  if (aspect > 1.65) {
+    const targetHeight = Math.min(crop.height, crop.width * 1.5);
+    const excess = crop.height - targetHeight;
+    crop.y += excess * 0.14;
+    crop.height = targetHeight;
+  }
+
+  crop.x = Math.max(0, crop.x);
+  crop.y = Math.max(0, crop.y);
+  crop.width = Math.min(crop.width, imageWidth - crop.x);
+  crop.height = Math.min(crop.height, imageHeight - crop.y);
+  return crop;
+}
+
+export function calculateGalleryEyeCutouts(size = ATLAS_SIZE) {
+  return GALLERY_EYE_CUTOUT_PROFILE.map((cutout) => ({
+    centerX: cutout.centerX * size,
+    centerY: cutout.centerY * size,
+    innerRadiusX: cutout.innerRadiusX * size,
+    innerRadiusY: cutout.innerRadiusY * size,
+    outerRadiusX: cutout.outerRadiusX * size,
+    outerRadiusY: cutout.outerRadiusY * size,
+  }));
+}
+
+function pixelLuma(data, offset) {
+  return data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
+}
+
+export function estimateGalleryEyeAnchor(imageData, bounds, fallback = DEFAULT_SOURCE_EYE_Y) {
+  const { data, width, height } = imageData;
+  const left = Math.max(1, Math.floor(bounds.x));
+  const right = Math.min(width - 2, Math.ceil(bounds.x + bounds.width));
+  const top = Math.max(1, Math.floor(bounds.y));
+  const bottom = Math.min(height - 2, Math.ceil(bounds.y + bounds.height));
+  const cropWidth = Math.max(1, right - left);
+  const cropHeight = Math.max(1, bottom - top);
+  const startY = Math.max(top + 1, Math.floor(top + cropHeight * 0.4));
+  const endY = Math.min(bottom - 1, Math.ceil(top + cropHeight * 0.56));
+  const eyeWindows = [
+    [left + cropWidth * 0.18, left + cropWidth * 0.48],
+    [left + cropWidth * 0.52, left + cropWidth * 0.82],
+  ];
+  const rowScores = [[], []];
+
+  for (let y = startY; y <= endY; y += 1) {
+    for (let eyeIndex = 0; eyeIndex < eyeWindows.length; eyeIndex += 1) {
+      const [windowStart, windowEnd] = eyeWindows[eyeIndex];
+      let edgeTotal = 0;
+      let samples = 0;
+      for (let x = Math.floor(windowStart); x <= Math.ceil(windowEnd); x += 2) {
+        const offset = (y * width + x) * 4;
+        if (data[offset + 3] < 32) continue;
+        const horizontal = Math.abs(
+          pixelLuma(data, offset + 4) - pixelLuma(data, offset - 4),
+        );
+        const vertical = Math.abs(
+          pixelLuma(data, offset + width * 4) - pixelLuma(data, offset - width * 4),
+        );
+        edgeTotal += horizontal + vertical;
+        samples += 1;
+      }
+      rowScores[eyeIndex].push(samples > 0 ? edgeTotal / samples : 0);
+    }
+  }
+
+  if (rowScores[0].length === 0) return fallback;
+  const smoothRadius = Math.max(1, Math.round(cropHeight * 0.02));
+  let bestScore = 0;
+  let bestY = fallback;
+  for (let index = 0; index < rowScores[0].length; index += 1) {
+    const from = Math.max(0, index - smoothRadius);
+    const to = Math.min(rowScores[0].length - 1, index + smoothRadius);
+    let leftScore = 0;
+    let rightScore = 0;
+    for (let sample = from; sample <= to; sample += 1) {
+      leftScore += rowScores[0][sample];
+      rightScore += rowScores[1][sample];
+    }
+    const sampleCount = to - from + 1;
+    const normalizedY = (startY + index - top) / cropHeight;
+    const prior = Math.exp(-0.5 * ((normalizedY - DEFAULT_SOURCE_EYE_Y) / 0.06) ** 2);
+    const score = Math.min(leftScore, rightScore) / sampleCount * (0.5 + 0.5 * prior);
+    if (score > bestScore) {
+      bestScore = score;
+      bestY = normalizedY;
+    }
+  }
+
+  return bestScore >= 4 ? Math.max(0.4, Math.min(0.54, bestY)) : fallback;
+}
+
+export function mapGalleryEyeRegisteredY(y, sourceEyeY, targetEyeY = CANONICAL_EYE_Y) {
+  if (y <= sourceEyeY) return y / Math.max(sourceEyeY, 0.001) * targetEyeY;
+  return targetEyeY
+    + (y - sourceEyeY) / Math.max(1 - sourceEyeY, 0.001) * (1 - targetEyeY);
+}
+
+function registerGalleryEyeBand(sourceCanvas, sourceEyeY, targetEyeY = CANONICAL_EYE_Y) {
+  const canvas = document.createElement('canvas');
+  canvas.width = sourceCanvas.width;
+  canvas.height = sourceCanvas.height;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('Unable to register Try-On gallery eye band.');
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+  const sourceSplit = Math.max(1, Math.min(canvas.height - 1, Math.round(sourceEyeY * canvas.height)));
+  const targetSplit = Math.max(1, Math.min(canvas.height - 1, Math.round(targetEyeY * canvas.height)));
+  context.drawImage(
+    sourceCanvas,
+    0,
+    0,
+    canvas.width,
+    sourceSplit,
+    0,
+    0,
+    canvas.width,
+    targetSplit,
+  );
+  context.drawImage(
+    sourceCanvas,
+    0,
+    sourceSplit,
+    canvas.width,
+    canvas.height - sourceSplit,
+    0,
+    targetSplit,
+    canvas.width,
+    canvas.height - targetSplit,
+  );
+  return canvas;
+}
+
+function applyGalleryEyeCutouts(context, size = ATLAS_SIZE) {
+  context.save();
+  context.globalCompositeOperation = 'destination-out';
+  for (const cutout of calculateGalleryEyeCutouts(size)) {
+    context.save();
+    context.translate(cutout.centerX, cutout.centerY);
+    context.scale(1, cutout.outerRadiusY / cutout.outerRadiusX);
+    const innerRatio = cutout.innerRadiusX / cutout.outerRadiusX;
+    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, cutout.outerRadiusX);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(innerRatio, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(0, 0, cutout.outerRadiusX, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+  context.restore();
+}
+
+function rasterizeGalleryImage(image, path, registration = {}) {
+  const sourceCanvas = document.createElement('canvas');
+  sourceCanvas.width = image.naturalWidth || image.width;
+  sourceCanvas.height = image.naturalHeight || image.height;
+  const sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true });
+  if (!sourceContext) throw new Error(`Unable to inspect Try-On gallery texture: ${path}`);
+  sourceContext.drawImage(image, 0, 0);
+
+  const sourceImageData = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+  const bounds = findOpaqueBounds(sourceImageData);
+  const crop = calculateGalleryCrop(bounds, sourceCanvas.width, sourceCanvas.height);
+  const sourceEyeY = estimateGalleryEyeAnchor(
+    sourceImageData,
+    crop,
+    registration.fallback_source_eye_y || DEFAULT_SOURCE_EYE_Y,
+  );
+  const rawCanvas = document.createElement('canvas');
+  rawCanvas.width = ATLAS_SIZE;
+  rawCanvas.height = ATLAS_SIZE;
+  const context = rawCanvas.getContext('2d');
+  if (!context) throw new Error(`Unable to rasterize Try-On gallery texture: ${path}`);
+
+  const scale = Math.min(ATLAS_SIZE / crop.width, ATLAS_SIZE / crop.height) * 0.96;
+  const destinationWidth = crop.width * scale;
+  const destinationHeight = crop.height * scale;
+  const destinationX = (ATLAS_SIZE - destinationWidth) / 2;
+  const destinationY = (ATLAS_SIZE - destinationHeight) / 2;
+  context.clearRect(0, 0, ATLAS_SIZE, ATLAS_SIZE);
+  context.drawImage(
+    image,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    destinationX,
+    destinationY,
+    destinationWidth,
+    destinationHeight,
+  );
+  const rawAtlasEyeY = (destinationY + destinationHeight * sourceEyeY) / ATLAS_SIZE;
+  const canvas = registerGalleryEyeBand(rawCanvas, rawAtlasEyeY);
+  const registeredContext = canvas.getContext('2d');
+  if (!registeredContext) throw new Error(`Unable to finish Try-On gallery texture: ${path}`);
+  applyGalleryEyeCutouts(registeredContext);
+  return canvas;
+}
+
 async function rasterizeSvgLayer(source, groupId, path) {
   const parser = new DOMParser();
   const documentNode = parser.parseFromString(source, 'image/svg+xml');
@@ -117,6 +353,12 @@ function loadLayeredAtlas(path, expectedSha256, layers) {
   })));
 }
 
+async function loadGalleryAtlas(path, layers, registration) {
+  const image = await loadImage(path);
+  const atlas = rasterizeGalleryImage(image, path, registration);
+  return layers.map((layer) => ({ ...layer, image: atlas }));
+}
+
 export class TemplateLoader {
   constructor({ meshPath = DEFAULT_CANONICAL_MESH_PATH } = {}) {
     this.meshPath = meshPath;
@@ -133,19 +375,31 @@ export class TemplateLoader {
 
   async loadTemplate(template) {
     const validated = validateTryOnTemplate(template);
-    if (!this.textureCache.has(validated.atlas_url)) {
+    const textureKey = validated.texture_source === 'gallery_image'
+      ? `${validated.source_image_url}:${validated.texture_registration?.profile || 'unregistered'}`
+      : validated.atlas_url;
+    if (!this.textureCache.has(textureKey)) {
       // SVG without explicit dimensions defaults to 300x150 in an Image element.
       // Rasterize every atlas into its canonical square before WebGL upload so UVs
       // and fine Tuong motifs remain stable across browsers.
-      this.textureCache.set(
-        validated.atlas_url,
-        loadLayeredAtlas(validated.atlas_url, validated.asset_sha256, validated.layers),
-      );
+      const texturePromise = validated.texture_source === 'gallery_image'
+        ? loadGalleryAtlas(validated.source_image_url, validated.layers, validated.texture_registration)
+        : loadLayeredAtlas(validated.atlas_url, validated.asset_sha256, validated.layers);
+      this.textureCache.set(textureKey, texturePromise);
+      texturePromise.catch(() => this.textureCache.delete(textureKey));
+      if (this.textureCache.size > MAX_CACHED_TEXTURES) {
+        const oldestKey = this.textureCache.keys().next().value;
+        if (oldestKey !== textureKey) this.textureCache.delete(oldestKey);
+      }
+    } else {
+      const cached = this.textureCache.get(textureKey);
+      this.textureCache.delete(textureKey);
+      this.textureCache.set(textureKey, cached);
     }
 
     const [mesh, layers] = await Promise.all([
       this.loadMesh(),
-      this.textureCache.get(validated.atlas_url),
+      this.textureCache.get(textureKey),
     ]);
 
     return { template: validated, mesh, layers };

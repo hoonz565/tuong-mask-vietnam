@@ -8,6 +8,7 @@ const validTemplate = {
   version: 1,
   release_channel: 'technical_pilot',
   topology_version: 'mediapipe_face_468_v1',
+  texture_source: 'layered_svg',
   atlas_url: '/try-on/templates/technical_fixture/v1/atlas.svg',
   asset_sha256: 'a'.repeat(64),
   thumbnail_url: '/static/images/fixture.png',
@@ -30,6 +31,41 @@ describe('validateTryOnTemplate', () => {
   it('rejects a texture outside the Try-On asset namespace', () => {
     expect(() => validateTryOnTemplate({ ...validTemplate, atlas_url: 'https://example.com/atlas.svg' }))
       .toThrow('same-origin');
+  });
+
+  it('accepts a same-origin gallery image template', () => {
+    const galleryTemplate = {
+      ...validTemplate,
+      texture_source: 'gallery_image',
+      source_image_url: '/static/images/18.png',
+      texture_registration: {
+        profile: 'adaptive_eye_band_v1',
+        fallback_source_eye_y: 0.465,
+      },
+    };
+    delete galleryTemplate.atlas_url;
+    delete galleryTemplate.asset_sha256;
+    expect(validateTryOnTemplate(galleryTemplate)).toBe(galleryTemplate);
+  });
+
+  it('rejects an external gallery image', () => {
+    expect(() => validateTryOnTemplate({
+      ...validTemplate,
+      texture_source: 'gallery_image',
+      source_image_url: 'https://example.com/18.png',
+      texture_registration: {
+        profile: 'adaptive_eye_band_v1',
+        fallback_source_eye_y: 0.465,
+      },
+    })).toThrow('same-origin gallery asset');
+  });
+
+  it('rejects gallery artwork without adaptive eye registration', () => {
+    expect(() => validateTryOnTemplate({
+      ...validTemplate,
+      texture_source: 'gallery_image',
+      source_image_url: '/static/images/18.png',
+    })).toThrow('adaptive eye registration');
   });
 });
 

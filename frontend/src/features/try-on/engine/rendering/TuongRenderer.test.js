@@ -3,6 +3,7 @@ import {
   buildMeshFrameData,
   calculateCoverTransform,
   createReprojectedParseUvs,
+  layerUsesSemanticParsing,
   landmarkToClip,
 } from './TuongRenderer';
 
@@ -34,6 +35,11 @@ describe('renderer coordinate transforms', () => {
       expect.closeTo(0.5), expect.closeTo(0.5),
       expect.closeTo(11 / 12), expect.closeTo(5 / 6),
     ]);
+  });
+
+  it('keeps flat gallery artwork bounded by the face mesh instead of fragmenting it', () => {
+    expect(layerUsesSemanticParsing({ occlusion_policy: 'face_mesh' })).toBe(false);
+    expect(layerUsesSemanticParsing({ occlusion_policy: 'semantic_face' })).toBe(true);
   });
 
   it('culls inverted and pathologically stretched triangles before drawing', () => {

@@ -26,7 +26,50 @@ test.beforeEach(async ({ page }) => {
   await routeTryOnApi(page);
 });
 
-test('live layered Try-On -> burst selection -> Photobooth download', async ({ page }, testInfo) => {
+test('all gallery masks are enabled and feathered eye cutouts reveal live eyes', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: /Bắt đầu Try-On/i }).click();
+  const dialog = page.getByRole('dialog');
+  const maskButtons = dialog.getByRole('button', { name: /^Thử mặt nạ /i });
+  await expect(maskButtons).toHaveCount(117);
+  expect(await maskButtons.evaluateAll((buttons) => buttons.filter((button) => button.disabled).length)).toBe(0);
+
+  await dialog.getByRole('button', { name: 'Thử mặt nạ Ác Tăng', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Ác Tăng', exact: true })).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/2.png');
+
+  await dialog.getByRole('button', { name: 'Thử mặt nạ Đào Tam Xuân', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Đào Tam Xuân', exact: true })).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/18.png');
+  await expect(dialog).toHaveAttribute('data-eye-cutout-profile', 'mediapipe_uv_feathered_v1');
+  await expect(dialog).toHaveAttribute('data-texture-registration', 'adaptive_eye_band_v1');
+
+  await dialog.getByRole('button', { name: 'Thử mặt nạ Bạch Viên', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Bạch Viên', exact: true })).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/3.png');
+  await dialog.getByRole('button', { name: /Cho phép camera và bắt đầu/i }).click();
+  await expect(dialog).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
+  await expect(dialog).toHaveAttribute('data-rendered-template-id', 'bach_vien_v1');
+  await expect.poll(
+    async () => Number(await dialog.getAttribute('data-parser-samples')),
+    { timeout: 45_000 },
+  ).toBeGreaterThanOrEqual(20);
+
+  const canvas = dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i });
+  await expect.poll(() => canvas.evaluate((node) => node.toDataURL('image/png').length), {
+    timeout: 30_000,
+  }).toBeGreaterThan(10_000);
+  await testInfo.attach('bach-vien-eye-cutout-live-canvas.png', {
+    body: await canvas.screenshot(),
+    contentType: 'image/png',
+  });
+  expect(pageErrors).toEqual([]);
+});
+
+test('live gallery-warp Try-On -> burst selection -> Photobooth download', async ({ page }, testInfo) => {
   const pageErrors = [];
   const webglErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -38,6 +81,9 @@ test('live layered Try-On -> burst selection -> Photobooth download', async ({ p
   const launchButton = page.getByRole('button', { name: /Bắt đầu Try-On/i });
   await launchButton.click();
   const dialog = page.getByRole('dialog');
+  const maskButtons = dialog.getByRole('button', { name: /^Thử mặt nạ /i });
+  await expect(maskButtons).toHaveCount(117);
+  expect(await maskButtons.evaluateAll((buttons) => buttons.filter((button) => button.disabled).length)).toBe(0);
   await dialog.getByRole('button', { name: /Cho phép camera và bắt đầu/i }).click();
   await expect(dialog).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
   await expect(dialog).toHaveAttribute('data-parser-provider', /webgpu|wasm/);
@@ -74,25 +120,35 @@ test('live layered Try-On -> burst selection -> Photobooth download', async ({ p
 
   const templateMatrix = [
     ['Khổng Minh', 'khong_minh_v1'],
-    ['Lý Phụng Đình — Xanh', 'ly_phung_dinh_blue_v1'],
+    ['Lý Phụng Đình (Xanh)', 'ly_phung_dinh_blue_v1'],
     ['Quan Công', 'quan_cong_v1'],
     ['Tào Tháo', 'tao_thao_v1'],
     ['Trương Phi', 'truong_phi_v1'],
     ['Ác Ba', 'ac_ba_v1'],
+    ['Ác Tăng', 'ac_tang_v1'],
     ['Đào Tam Xuân', 'dao_tam_xuan_v1'],
     ['Bao Công', 'bao_cong_v1'],
   ];
   let previousFrame = await dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
     .evaluate((canvas) => canvas.toDataURL('image/png'));
   for (const [name, id] of templateMatrix) {
-    await dialog.getByRole('button', { name: `Thử mặt nạ ${name}` }).click();
+    await dialog.getByRole('button', { name: `Thử mặt nạ ${name}`, exact: true }).first().click();
     await expect(dialog).toHaveAttribute('data-rendered-template-id', id);
+    if (id === 'dao_tam_xuan_v1') {
+      await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/18.png');
+    }
     await expect.poll(
       () => dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
         .evaluate((canvas) => canvas.toDataURL('image/png')),
     ).not.toBe(previousFrame);
     const nextFrame = await dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i })
       .evaluate((canvas) => canvas.toDataURL('image/png'));
+    if (id === 'dao_tam_xuan_v1') {
+      await testInfo.attach('dao-tam-xuan-live-canvas.png', {
+        body: await dialog.getByRole('img', { name: /Hình camera với mặt nạ Tuồng/i }).screenshot(),
+        contentType: 'image/png',
+      });
+    }
     previousFrame = nextFrame;
   }
 
