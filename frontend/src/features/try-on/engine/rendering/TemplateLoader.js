@@ -3,6 +3,10 @@ import { loadTryOnTextAsset, validateTryOnTemplate } from '../../../../api/tryOn
 const DEFAULT_CANONICAL_MESH_PATH = '/try-on/mesh/canonical_face_model.obj';
 const ATLAS_SIZE = 1024;
 const MAX_CACHED_TEXTURES = 12;
+const GALLERY_EYE_CUTOUT_PROFILE = Object.freeze([
+  Object.freeze({ centerX: 0.34445, centerY: 0.37851, innerRadiusX: 0.108, innerRadiusY: 0.052, outerRadiusX: 0.145, outerRadiusY: 0.084 }),
+  Object.freeze({ centerX: 0.65556, centerY: 0.37851, innerRadiusX: 0.108, innerRadiusY: 0.052, outerRadiusX: 0.145, outerRadiusY: 0.084 }),
+]);
 const LAYER_GROUP_BY_ID = Object.freeze({
   base: 'layer-base',
   eye_motifs: 'layer-eyes',
@@ -122,6 +126,38 @@ export function calculateGalleryCrop(bounds, imageWidth, imageHeight) {
   return crop;
 }
 
+export function calculateGalleryEyeCutouts(size = ATLAS_SIZE) {
+  return GALLERY_EYE_CUTOUT_PROFILE.map((cutout) => ({
+    centerX: cutout.centerX * size,
+    centerY: cutout.centerY * size,
+    innerRadiusX: cutout.innerRadiusX * size,
+    innerRadiusY: cutout.innerRadiusY * size,
+    outerRadiusX: cutout.outerRadiusX * size,
+    outerRadiusY: cutout.outerRadiusY * size,
+  }));
+}
+
+function applyGalleryEyeCutouts(context, size = ATLAS_SIZE) {
+  context.save();
+  context.globalCompositeOperation = 'destination-out';
+  for (const cutout of calculateGalleryEyeCutouts(size)) {
+    context.save();
+    context.translate(cutout.centerX, cutout.centerY);
+    context.scale(1, cutout.outerRadiusY / cutout.outerRadiusX);
+    const innerRatio = cutout.innerRadiusX / cutout.outerRadiusX;
+    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, cutout.outerRadiusX);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(innerRatio, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(0, 0, cutout.outerRadiusX, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+  context.restore();
+}
+
 function rasterizeGalleryImage(image, path) {
   const sourceCanvas = document.createElement('canvas');
   sourceCanvas.width = image.naturalWidth || image.width;
@@ -157,6 +193,7 @@ function rasterizeGalleryImage(image, path) {
     destinationWidth,
     destinationHeight,
   );
+  applyGalleryEyeCutouts(context);
   return canvas;
 }
 

@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { calculateGalleryCrop, findOpaqueBounds, parseCanonicalObj } from './TemplateLoader';
+import {
+  calculateGalleryCrop,
+  calculateGalleryEyeCutouts,
+  findOpaqueBounds,
+  parseCanonicalObj,
+} from './TemplateLoader';
 
 describe('parseCanonicalObj', () => {
   it('loads MediaPipe canonical UV topology', () => {
@@ -56,5 +61,16 @@ describe('gallery texture registration', () => {
     expect(crop.height).toBeCloseTo(802.5);
     expect(crop.y).toBeGreaterThan(85);
     expect(crop.y + crop.height).toBeLessThanOrEqual(1350);
+  });
+
+  it('places symmetric feathered holes over the canonical MediaPipe eyes', () => {
+    const [leftEye, rightEye] = calculateGalleryEyeCutouts(1024);
+    expect(leftEye.centerX / 1024).toBeCloseTo(0.34445, 4);
+    expect(rightEye.centerX / 1024).toBeCloseTo(0.65556, 4);
+    expect(leftEye.centerY).toBeCloseTo(rightEye.centerY);
+    expect(leftEye.centerX).toBeCloseTo(1024 - rightEye.centerX, 1);
+    expect(leftEye.innerRadiusX).toBeGreaterThan(100);
+    expect(leftEye.outerRadiusX).toBeGreaterThan(leftEye.innerRadiusX);
+    expect(leftEye.outerRadiusY).toBeGreaterThan(leftEye.innerRadiusY);
   });
 });

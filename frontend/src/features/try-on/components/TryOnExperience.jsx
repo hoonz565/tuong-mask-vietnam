@@ -256,6 +256,7 @@ export default function TryOnExperience({ masks = [], templates, initialTemplate
       data-parser-provider={capabilities?.parserExecutionProvider || 'pending'}
       data-rendered-template-id={renderedTemplateId || 'pending'}
       data-template-source-image={template.source_image_url || template.atlas_url || 'pending'}
+      data-eye-cutout-profile={template.eye_cutout_profile || 'none'}
       data-parser-error={capabilities?.parserError || ''}
       data-render-fps={performanceSummary?.render_fps?.median?.toFixed(2) || 'pending'}
       data-parser-hz={performanceSummary?.parser_hz?.median?.toFixed(2) || 'pending'}

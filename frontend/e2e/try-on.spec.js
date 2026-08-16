@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
   await routeTryOnApi(page);
 });
 
-test('all gallery masks are enabled and Đào Tam Xuân renders image 18', async ({ page }, testInfo) => {
+test('all gallery masks are enabled and feathered eye cutouts reveal live eyes', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -44,9 +44,14 @@ test('all gallery masks are enabled and Đào Tam Xuân renders image 18', async
   await dialog.getByRole('button', { name: 'Thử mặt nạ Đào Tam Xuân', exact: true }).click();
   await expect(dialog.getByRole('heading', { name: 'Đào Tam Xuân', exact: true })).toBeVisible();
   await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/18.png');
+  await expect(dialog).toHaveAttribute('data-eye-cutout-profile', 'mediapipe_uv_feathered_v1');
+
+  await dialog.getByRole('button', { name: 'Thử mặt nạ Bạch Viên', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Bạch Viên', exact: true })).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/3.png');
   await dialog.getByRole('button', { name: /Cho phép camera và bắt đầu/i }).click();
   await expect(dialog).toHaveAttribute('data-state', 'live', { timeout: 90_000 });
-  await expect(dialog).toHaveAttribute('data-rendered-template-id', 'dao_tam_xuan_v1');
+  await expect(dialog).toHaveAttribute('data-rendered-template-id', 'bach_vien_v1');
   await expect.poll(
     async () => Number(await dialog.getAttribute('data-parser-samples')),
     { timeout: 45_000 },
@@ -56,7 +61,7 @@ test('all gallery masks are enabled and Đào Tam Xuân renders image 18', async
   await expect.poll(() => canvas.evaluate((node) => node.toDataURL('image/png').length), {
     timeout: 30_000,
   }).toBeGreaterThan(10_000);
-  await testInfo.attach('dao-tam-xuan-image-18-live-canvas.png', {
+  await testInfo.attach('bach-vien-eye-cutout-live-canvas.png', {
     body: await canvas.screenshot(),
     contentType: 'image/png',
   });

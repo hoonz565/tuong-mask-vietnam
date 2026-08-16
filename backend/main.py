@@ -159,6 +159,7 @@ def get_runtime_try_on_templates():
             "topology_version": "mediapipe_face_468_v1",
             "texture_source": "gallery_image",
             "source_image_url": mask["image_url"],
+            "eye_cutout_profile": "mediapipe_uv_feathered_v1",
             "thumbnail_url": mask["image_url"],
             "accent": authored.get("accent", "#ebe5ce") if authored else "#ebe5ce",
             "layers": [{

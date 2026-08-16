@@ -49,6 +49,7 @@ class TryOnManifestTests(unittest.TestCase):
             self.assertRegex(template["id"], r"^[a-z0-9_]+_v[0-9]+$")
             self.assertEqual(template["texture_source"], "gallery_image")
             self.assertEqual(template["source_image_url"], mask["image_url"])
+            self.assertEqual(template["eye_cutout_profile"], "mediapipe_uv_feathered_v1")
             self.assertEqual(template["thumbnail_url"], mask["image_url"])
             self.assertEqual(template["layers"][0]["id"], "gallery_mask")
             self.assertEqual(template["layers"][0]["occlusion_policy"], "face_mesh")
