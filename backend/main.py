@@ -160,6 +160,10 @@ def get_runtime_try_on_templates():
             "texture_source": "gallery_image",
             "source_image_url": mask["image_url"],
             "eye_cutout_profile": "mediapipe_uv_feathered_v1",
+            "texture_registration": {
+                "profile": "adaptive_eye_band_v1",
+                "fallback_source_eye_y": 0.465,
+            },
             "thumbnail_url": mask["image_url"],
             "accent": authored.get("accent", "#ebe5ce") if authored else "#ebe5ce",
             "layers": [{

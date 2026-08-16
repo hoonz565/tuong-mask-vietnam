@@ -38,6 +38,10 @@ describe('validateTryOnTemplate', () => {
       ...validTemplate,
       texture_source: 'gallery_image',
       source_image_url: '/static/images/18.png',
+      texture_registration: {
+        profile: 'adaptive_eye_band_v1',
+        fallback_source_eye_y: 0.465,
+      },
     };
     delete galleryTemplate.atlas_url;
     delete galleryTemplate.asset_sha256;
@@ -49,7 +53,19 @@ describe('validateTryOnTemplate', () => {
       ...validTemplate,
       texture_source: 'gallery_image',
       source_image_url: 'https://example.com/18.png',
+      texture_registration: {
+        profile: 'adaptive_eye_band_v1',
+        fallback_source_eye_y: 0.465,
+      },
     })).toThrow('same-origin gallery asset');
+  });
+
+  it('rejects gallery artwork without adaptive eye registration', () => {
+    expect(() => validateTryOnTemplate({
+      ...validTemplate,
+      texture_source: 'gallery_image',
+      source_image_url: '/static/images/18.png',
+    })).toThrow('adaptive eye registration');
   });
 });
 

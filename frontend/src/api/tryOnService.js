@@ -44,6 +44,10 @@ export function validateTryOnTemplate(template) {
     if (!/^\/static\/images\/[A-Za-z0-9._-]+$/.test(template.source_image_url || '')) {
       throw new Error(`Invalid Try-On template ${template.id}: source image must be a same-origin gallery asset.`);
     }
+    if (template.texture_registration?.profile !== 'adaptive_eye_band_v1'
+      || !Number.isFinite(template.texture_registration?.fallback_source_eye_y)) {
+      throw new Error(`Invalid Try-On template ${template.id}: adaptive eye registration is required.`);
+    }
   } else {
     throw new Error(`Invalid Try-On template ${template.id}: unsupported texture source ${template.texture_source}.`);
   }

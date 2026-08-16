@@ -45,6 +45,7 @@ test('all gallery masks are enabled and feathered eye cutouts reveal live eyes',
   await expect(dialog.getByRole('heading', { name: 'Đào Tam Xuân', exact: true })).toBeVisible();
   await expect(dialog).toHaveAttribute('data-template-source-image', '/static/images/18.png');
   await expect(dialog).toHaveAttribute('data-eye-cutout-profile', 'mediapipe_uv_feathered_v1');
+  await expect(dialog).toHaveAttribute('data-texture-registration', 'adaptive_eye_band_v1');
 
   await dialog.getByRole('button', { name: 'Thử mặt nạ Bạch Viên', exact: true }).click();
   await expect(dialog.getByRole('heading', { name: 'Bạch Viên', exact: true })).toBeVisible();

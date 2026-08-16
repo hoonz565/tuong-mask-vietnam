@@ -50,6 +50,8 @@ class TryOnManifestTests(unittest.TestCase):
             self.assertEqual(template["texture_source"], "gallery_image")
             self.assertEqual(template["source_image_url"], mask["image_url"])
             self.assertEqual(template["eye_cutout_profile"], "mediapipe_uv_feathered_v1")
+            self.assertEqual(template["texture_registration"]["profile"], "adaptive_eye_band_v1")
+            self.assertEqual(template["texture_registration"]["fallback_source_eye_y"], 0.465)
             self.assertEqual(template["thumbnail_url"], mask["image_url"])
             self.assertEqual(template["layers"][0]["id"], "gallery_mask")
             self.assertEqual(template["layers"][0]["occlusion_policy"], "face_mesh")
