@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { matchMask } from '../../api/maskService';
+import CloseButton from '../ui/CloseButton';
 const TOTAL_POINTS = 200;
 const MIN_STAT = 10;
 const MAX_STAT = 100;
@@ -460,14 +460,11 @@ function RevealStage({ mask, onReset }) {
             {/* BUTTON & STORY ALIGNMENT ROW */}
             <div className="w-full flex flex-row items-start justify-between pt-0 pr-0">
               <div className="pt-12 pl-0">
-                <button
+                <CloseButton
                   onClick={onReset}
-                  className="group w-20 h-20 flex-shrink-0 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-white/5 backdrop-blur-sm relative"
-                >
-                  <div className="absolute -top-[2px] -left-[2px] w-4 h-4 border-t-2 border-l-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-                  <div className="absolute -bottom-[2px] -right-[2px] w-4 h-4 border-b-2 border-r-2 border-tertiary/40 group-hover:border-secondary transition-colors" />
-                  <X size={36} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-                </button>
+                  ariaLabel="Đóng kết quả khám phá mặt nạ"
+                  className="shrink-0 bg-white/5"
+                />
               </div>
 
               <motion.div
@@ -647,17 +644,18 @@ export default function DiscoverMask() {
     <div className="w-full py-12 relative">
       <AnimatePresence>
         {stage === 'adjust' && isUnlocked && (
-          <motion.button
+          <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            onClick={handleExit}
-            className="group absolute top-0 right-0 z-[100] w-12 h-12 flex items-center justify-center border border-tertiary/20 hover:border-secondary transition-colors bg-black/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+            className="absolute right-0 top-0 z-50"
           >
-            <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-tertiary/40 group-hover:border-secondary transition-colors" />
-            <X size={20} className="text-tertiary/60 group-hover:text-secondary group-hover:rotate-90 transition-all" />
-          </motion.button>
+            <CloseButton
+              onClick={handleExit}
+              ariaLabel="Đóng bảng điều chỉnh"
+              className="bg-black/80"
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
