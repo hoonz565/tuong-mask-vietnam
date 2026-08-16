@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Scan } from 'lucide-react';
+import { Scan } from 'lucide-react';
+import CloseButton from '../ui/CloseButton';
 
 export default function StatsModal({ selectedMask, setSelectedMask }) {
   return (
@@ -20,12 +21,11 @@ export default function StatsModal({ selectedMask, setSelectedMask }) {
             className="relative w-full max-w-5xl max-h-[90vh] bg-surface border border-secondary/30 flex flex-col md:flex-row overflow-hidden shadow-[0_0_50px_rgba(255,25,25,0.1)]"
           >
             {/* Top Right Close Button */}
-            <button 
+            <CloseButton
               onClick={() => setSelectedMask(null)}
-              className="absolute top-4 right-4 z-20 text-tertiary hover:text-secondary transition-colors p-2 bg-inverse/80 rounded-full"
-            >
-              <X size={24} />
-            </button>
+              ariaLabel="Đóng thống kê mặt nạ"
+              className="absolute right-4 top-4 z-20 bg-inverse/80"
+            />
 
             {/* Left Side: Image */}
             <div className="w-full md:w-1/2 bg-inverse p-8 relative flex items-center justify-center min-h-[300px] md:min-h-0">

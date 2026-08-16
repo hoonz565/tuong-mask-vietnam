@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import CustomCursor from './components/layout/CustomCursor';
 import BackgroundText from './components/layout/BackgroundText';
 import Header from './components/layout/Header';
@@ -18,9 +18,11 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tryOnTemplates, setTryOnTemplates] = useState([]);
+  const [tryOnLoading, setTryOnLoading] = useState(TRY_ON_RELEASE.enabled);
+  const [tryOnError, setTryOnError] = useState(null);
   const [requestedTemplateId, setRequestedTemplateId] = useState(null);
 
-  useEffect(() => {
+  const fetchMasks = useCallback(() => {
     getAllMasks()
       .then((data) => {
         setMasks(data);
@@ -32,15 +34,39 @@ function App() {
       });
   }, []);
 
+  const retryMasks = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    fetchMasks();
+  }, [fetchMasks]);
+
   useEffect(() => {
-    if (!TRY_ON_RELEASE.enabled) return undefined;
+    fetchMasks();
+  }, [fetchMasks]);
+
+  const fetchTryOnTemplates = useCallback(() => {
+    if (!TRY_ON_RELEASE.enabled) return;
     getTryOnTemplates({ releaseChannel: TRY_ON_RELEASE.releaseChannel })
-      .then(setTryOnTemplates)
+      .then((templates) => {
+        setTryOnTemplates(templates);
+      })
       .catch((tryOnError) => {
+        setTryOnError(tryOnError.message);
         if (import.meta.env.DEV) console.warn('[Try-On] Template manifest unavailable:', tryOnError.message);
-      });
-    return undefined;
+      })
+      .finally(() => setTryOnLoading(false));
   }, []);
+
+  const retryTryOnTemplates = useCallback(() => {
+    setTryOnLoading(true);
+    setTryOnError(null);
+    fetchTryOnTemplates();
+  }, [fetchTryOnTemplates]);
+
+  useEffect(() => {
+    fetchTryOnTemplates();
+    return undefined;
+  }, [fetchTryOnTemplates]);
 
   return (
     <div className="min-h-screen bg-surface text-tertiary cyber-grid-bg relative overflow-hidden flex flex-col items-center">
@@ -58,22 +84,27 @@ function App() {
         error={error}
         tryOnTemplates={tryOnTemplates}
         onTryOn={(templateId) => setRequestedTemplateId(templateId)}
+        onRetry={retryMasks}
       />
 
-      {TRY_ON_RELEASE.enabled && (
-        <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
-          <TryOnFeature
-            templates={tryOnTemplates}
-            requestedTemplateId={requestedTemplateId}
-            onRequestHandled={() => setRequestedTemplateId(null)}
-          />
-        </Suspense>
-      )}
-      
       {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
       <div id="discover-section" className="w-full mt-16 relative z-10 px-6 md:px-12">
         <DiscoverMask />
       </div>
+
+      {TRY_ON_RELEASE.enabled && (
+        <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
+          <TryOnFeature
+            masks={masks}
+            templates={tryOnTemplates}
+            loading={tryOnLoading}
+            error={tryOnError}
+            requestedTemplateId={requestedTemplateId}
+            onRetry={retryTryOnTemplates}
+            onRequestHandled={() => setRequestedTemplateId(null)}
+          />
+        </Suspense>
+      )}
 
       {/* Footer */}
       <GalleryFooter masks={masks} />

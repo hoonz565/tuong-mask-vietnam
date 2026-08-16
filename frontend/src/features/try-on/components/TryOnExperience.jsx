@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Camera, FlipHorizontal2, Gauge, ScanFace, ShieldCheck, X } from 'lucide-react';
+import { Camera, FlipHorizontal2, Gauge, ScanFace, ShieldCheck } from 'lucide-react';
 import { detectTryOnSupport, TryOnEngine } from '../engine/TryOnEngine';
 import { initialTryOnState, TRY_ON_STATES, tryOnReducer } from '../state/tryOnMachine';
+import CloseButton from '../../../components/ui/CloseButton';
+import MaskSelectorGrid from '../../../components/gallery/MaskSelectorGrid';
 import Photobooth from './Photobooth';
 
 function cameraErrorMessage(error) {
@@ -25,7 +27,7 @@ function LoadingPanel({ state, status }) {
   );
 }
 
-export default function TryOnExperience({ templates, initialTemplateId, onClose }) {
+export default function TryOnExperience({ masks = [], templates, initialTemplateId, onClose }) {
   const initialTemplate = templates.find((item) => item.id === initialTemplateId) || templates[0];
   const [template, setTemplate] = useState(initialTemplate);
   const [state, dispatch] = useReducer(tryOnReducer, initialTryOnState);
@@ -53,6 +55,16 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
     const requested = new URLSearchParams(globalThis.location?.search || '').get('tryOnParser');
     return requested === 'wasm' || requested === 'webgpu' ? requested : 'auto';
   }, []);
+  const templatesByMaskId = useMemo(
+    () => new Map(templates.map((item) => [item.mask_id, item])),
+    [templates],
+  );
+  const selectorMasks = useMemo(
+    () => masks.length > 0
+      ? masks
+      : templates.map((item) => ({ id: item.mask_id, name: item.name, image_url: item.thumbnail_url })),
+    [masks, templates],
+  );
 
   const handleClose = useCallback(() => {
     captureSequenceRef.current += 1;
@@ -259,9 +271,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
             <p className="text-[10px] uppercase tracking-[0.35em] text-secondary">AI Virtual Try-On · Technical Pilot</p>
             <h2 id="try-on-title" className="text-xl uppercase text-tertiary md:text-2xl">{template.name}</h2>
           </div>
-          <button ref={closeButtonRef} type="button" onClick={handleClose} className="grid h-11 w-11 place-items-center border border-tertiary/25 text-tertiary hover:border-secondary hover:text-secondary" aria-label="Đóng Try-On">
-            <X size={20} />
-          </button>
+          <CloseButton ref={closeButtonRef} onClick={handleClose} ariaLabel="Đóng Try-On" />
         </header>
 
         {state.value === TRY_ON_STATES.REVIEW && captures.length > 0 ? (
@@ -269,7 +279,7 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
             <Photobooth captures={captures} template={template} onRetake={retake} onClose={handleClose} />
           </main>
         ) : (
-          <main className="grid min-h-[76vh] lg:grid-cols-[minmax(0,1fr)_330px]">
+          <main className="grid min-h-[76vh] lg:grid-cols-[minmax(0,1fr)_420px]">
             <section className="relative min-h-[56vh] overflow-hidden bg-surface" aria-label="Camera Try-On">
               <video ref={videoRef} className="hidden" aria-hidden="true" />
               <canvas ref={canvasRef} role="img" className="h-full min-h-[56vh] w-full" aria-label="Hình camera với mặt nạ Tuồng được biến dạng theo khuôn mặt" />
@@ -328,13 +338,19 @@ export default function TryOnExperience({ templates, initialTemplateId, onClose 
 
             <aside className="flex flex-col border-t border-tertiary/15 p-4 lg:border-l lg:border-t-0 md:p-5">
               <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-tertiary/45">Chọn mặt nạ thử</p>
-              <div className="grid max-h-44 grid-cols-4 gap-2 overflow-y-auto pr-1 custom-scrollbar lg:grid-cols-3">
-                {templates.map((item) => (
-                  <button key={item.id} type="button" onClick={() => selectTemplate(item)} className={`relative aspect-square overflow-hidden border p-1 ${item.id === template.id ? 'border-secondary bg-secondary/10' : 'border-tertiary/15'}`} aria-pressed={item.id === template.id} aria-label={`Thử mặt nạ ${item.name}`}>
-                    <img src={item.thumbnail_url} alt="" className="h-full w-full object-contain" />
-                  </button>
-                ))}
-              </div>
+              <MaskSelectorGrid
+                masks={selectorMasks}
+                selectedMaskId={template.mask_id}
+                onSelect={(mask) => selectTemplate(templatesByMaskId.get(mask.id))}
+                isMaskDisabled={(mask) => !templatesByMaskId.has(mask.id)}
+                getButtonLabel={(mask) => {
+                  const selectableTemplate = templatesByMaskId.get(mask.id);
+                  return selectableTemplate
+                    ? `Thử mặt nạ ${selectableTemplate.name}`
+                    : `${mask.name} chưa có template Try-On`;
+                }}
+                compact
+              />
 
               <div className="mt-5 space-y-4 border-t border-tertiary/10 pt-5">
                 <label className="block text-[11px] uppercase tracking-widest text-tertiary/60">
