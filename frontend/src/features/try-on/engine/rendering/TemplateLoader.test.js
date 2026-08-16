@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { parseCanonicalObj } from './TemplateLoader';
+import { calculateGalleryCrop, findOpaqueBounds, parseCanonicalObj } from './TemplateLoader';
 
 describe('parseCanonicalObj', () => {
   it('loads MediaPipe canonical UV topology', () => {
@@ -35,5 +35,26 @@ describe('parseCanonicalObj', () => {
       expect(source).toContain('id="layer-eyes"');
       expect(source).toContain('id="layer-mouth"');
     }
+  });
+});
+
+describe('gallery texture registration', () => {
+  it('finds the non-transparent source artwork bounds', () => {
+    const pixels = new Uint8ClampedArray(4 * 4 * 4);
+    pixels[(1 * 4 + 1) * 4 + 3] = 255;
+    pixels[(2 * 4 + 3) * 4 + 3] = 255;
+    expect(findOpaqueBounds({ data: pixels, width: 4, height: 4 }))
+      .toEqual({ x: 1, y: 1, width: 3, height: 2 });
+  });
+
+  it('focuses tall costume artwork on its upper face-bearing section', () => {
+    const crop = calculateGalleryCrop(
+      { x: 273, y: 85, width: 535, height: 1180 },
+      1080,
+      1350,
+    );
+    expect(crop.height).toBeCloseTo(802.5);
+    expect(crop.y).toBeGreaterThan(85);
+    expect(crop.y + crop.height).toBeLessThanOrEqual(1350);
   });
 });

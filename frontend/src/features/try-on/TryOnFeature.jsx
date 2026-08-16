@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Camera, Cpu, Focus, ScanFace, Sparkles } from 'lucide-react';
+import MaskSelectorGrid from '../../components/gallery/MaskSelectorGrid';
 import TryOnExperience from './components/TryOnExperience';
 
 const PIPELINE = [
@@ -21,6 +22,10 @@ export default function TryOnFeature({
   const [activeTemplateId, setActiveTemplateId] = useState(null);
 
   const hasTemplates = templates.length > 0;
+  const templatesByMaskId = new Map(templates.map((item) => [item.mask_id, item]));
+  const selectorMasks = masks.length > 0
+    ? masks
+    : templates.map((item) => ({ id: item.mask_id, name: item.name, image_url: item.thumbnail_url }));
   const requestedTemplateExists = templates.some((item) => item.id === requestedTemplateId);
   const openTemplateId = requestedTemplateExists ? requestedTemplateId : activeTemplateId;
 
@@ -72,12 +77,15 @@ export default function TryOnFeature({
             </div>
           )}
           {!loading && hasTemplates && (
-            <div className="mt-9 grid grid-cols-4 gap-2 md:grid-cols-8">
-              {templates.map((template) => (
-                <button key={template.id} type="button" onClick={() => setActiveTemplateId(template.id)} className="group aspect-square overflow-hidden border border-tertiary/15 bg-surface/30 p-2 hover:border-secondary" aria-label={`Mở Try-On với ${template.name}`}>
-                  <img src={template.thumbnail_url} alt="" className="size-full object-contain transition-transform group-hover:scale-110 motion-reduce:transition-none" />
-                </button>
-              ))}
+            <div className="mt-9">
+              <MaskSelectorGrid
+                masks={selectorMasks}
+                selectedMaskId={null}
+                onSelect={(mask) => setActiveTemplateId(templatesByMaskId.get(mask.id)?.id || null)}
+                isMaskDisabled={(mask) => !templatesByMaskId.has(mask.id)}
+                getButtonLabel={(mask) => `Mở Try-On với ${mask.name}`}
+                compact
+              />
             </div>
           )}
           {!loading && !hasTemplates && (

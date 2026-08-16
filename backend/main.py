@@ -128,6 +128,56 @@ def get_cached_try_on_templates():
     return _try_on_cache
 
 
+def get_runtime_try_on_templates():
+    """Expose every gallery mask as a source-faithful geometry-warp template.
+
+    The small authored SVG manifest remains validated as an immutable archive,
+    while the live catalogue uses each mask's own gallery image. Existing pilot
+    ids are preserved so analytics, deep links, and regression fixtures remain
+    stable.
+    """
+    authored_templates = get_cached_try_on_templates()["templates"]
+    authored_by_mask_id = {item["mask_id"]: item for item in authored_templates}
+    runtime_templates = []
+
+    for mask in get_cached_masks():
+        authored = authored_by_mask_id.get(mask["id"])
+        template_id = authored["id"] if authored else f"{mask['id'].lower()}_v1"
+        pose_limits = authored["pose_limits"] if authored else {"yaw": 32, "pitch": 22}
+        cultural_review = dict(authored["cultural_review"]) if authored else {
+            "status": "gallery_source_pending_expert_review",
+            "source_mask_id": mask["id"],
+        }
+        cultural_review["source_mask_id"] = mask["id"]
+
+        runtime_templates.append({
+            "id": template_id,
+            "mask_id": mask["id"],
+            "name": mask["name"],
+            "version": authored["version"] if authored else 1,
+            "release_channel": "technical_pilot",
+            "topology_version": "mediapipe_face_468_v1",
+            "texture_source": "gallery_image",
+            "source_image_url": mask["image_url"],
+            "thumbnail_url": mask["image_url"],
+            "accent": authored.get("accent", "#ebe5ce") if authored else "#ebe5ce",
+            "layers": [{
+                "id": "gallery_mask",
+                "region": "face",
+                "blend_mode": "normal",
+                "occlusion_policy": "face_mesh",
+            }],
+            "pose_limits": pose_limits,
+            "cultural_review": cultural_review,
+            "license": dict(authored["license"]) if authored else {
+                "asset_owner": "project",
+                "usage": "technical_pilot",
+            },
+        })
+
+    return runtime_templates
+
+
 # ---------------------------------------------------------------------------
 # GET /api/masks
 # ---------------------------------------------------------------------------
@@ -164,7 +214,7 @@ async def get_try_on_templates():
     try:
         manifest = get_cached_try_on_templates()
         return {
-            "data": manifest["templates"],
+            "data": get_runtime_try_on_templates(),
             "schema_version": manifest["schema_version"],
             "status": "ok",
         }
@@ -175,7 +225,7 @@ async def get_try_on_templates():
 @app.get("/api/try-on/templates/{template_id}")
 async def get_try_on_template(template_id: str):
     try:
-        templates = get_cached_try_on_templates()["templates"]
+        templates = get_runtime_try_on_templates()
         template = next((item for item in templates if item["id"] == template_id), None)
         if not template:
             raise HTTPException(status_code=404, detail="Try-On template not found")

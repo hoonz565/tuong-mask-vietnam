@@ -7,8 +7,7 @@ const REQUIRED_TEMPLATE_FIELDS = [
   'version',
   'release_channel',
   'topology_version',
-  'atlas_url',
-  'asset_sha256',
+  'texture_source',
   'thumbnail_url',
   'layers',
   'pose_limits',
@@ -30,16 +29,23 @@ export function validateTryOnTemplate(template) {
     throw new Error(`Invalid Try-On template ${template.id}: at least one layer is required.`);
   }
 
-  if (!template.atlas_url.startsWith('/try-on/templates/')) {
-    throw new Error(`Invalid Try-On template ${template.id}: atlas must be a same-origin Try-On asset.`);
-  }
-
   if (!template.thumbnail_url.startsWith('/')) {
     throw new Error(`Invalid Try-On template ${template.id}: thumbnail must be a same-origin asset.`);
   }
 
-  if (!/^[0-9a-f]{64}$/.test(template.asset_sha256)) {
-    throw new Error(`Invalid Try-On template ${template.id}: asset_sha256 must be a lowercase SHA-256 digest.`);
+  if (template.texture_source === 'layered_svg') {
+    if (!template.atlas_url?.startsWith('/try-on/templates/')) {
+      throw new Error(`Invalid Try-On template ${template.id}: atlas must be a same-origin Try-On asset.`);
+    }
+    if (!/^[0-9a-f]{64}$/.test(template.asset_sha256)) {
+      throw new Error(`Invalid Try-On template ${template.id}: asset_sha256 must be a lowercase SHA-256 digest.`);
+    }
+  } else if (template.texture_source === 'gallery_image') {
+    if (!/^\/static\/images\/[A-Za-z0-9._-]+$/.test(template.source_image_url || '')) {
+      throw new Error(`Invalid Try-On template ${template.id}: source image must be a same-origin gallery asset.`);
+    }
+  } else {
+    throw new Error(`Invalid Try-On template ${template.id}: unsupported texture source ${template.texture_source}.`);
   }
 
   if (template.topology_version !== 'mediapipe_face_468_v1') {

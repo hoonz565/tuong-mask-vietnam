@@ -139,6 +139,10 @@ export function createReprojectedParseUvs(mesh, sourceLandmarks, roi) {
   return parseUvs;
 }
 
+export function layerUsesSemanticParsing(layer) {
+  return layer?.occlusion_policy !== 'face_mesh';
+}
+
 function signedTriangleArea(triangle) {
   return (
     (triangle[1].x - triangle[0].x) * (triangle[2].y - triangle[0].y)
@@ -384,10 +388,13 @@ export class TuongRenderer {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.parseTexture);
     gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_parse'), 1);
-    gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_has_parse'), this.hasParse);
     gl.uniform1f(gl.getUniformLocation(this.maskProgram, 'u_alpha'), alpha * poseOpacity(pose, this.template.pose_limits));
     gl.uniform1f(gl.getUniformLocation(this.maskProgram, 'u_intensity'), intensity);
     for (const layer of this.atlasTextures) {
+      gl.uniform1i(
+        gl.getUniformLocation(this.maskProgram, 'u_has_parse'),
+        this.hasParse && layerUsesSemanticParsing(layer),
+      );
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, layer.texture);
       gl.uniform1i(gl.getUniformLocation(this.maskProgram, 'u_atlas'), 0);
