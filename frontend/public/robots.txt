@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow private or non-public paths
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://tuongmask.vn/sitemap.xml
+
+# LLM documentation
+# See: https://tuongmask.vn/llms.txt

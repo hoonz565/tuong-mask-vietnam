@@ -1,16 +1,196 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo_tuong.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="/logo_tuong.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mặt nạ Tuồng</title>
-    <meta name="description" content="Khám phá kho tàng mặt nạ Tuồng truyền thống Việt Nam." />
-    <meta property="og:title" content="Mặt nạ Tuồng" />
-    <meta property="og:image" content="/logo_tuong.png" />
+
+    <!-- ── Primary Meta ─────────────────────────────────────────── -->
+    <title>Mặt Nạ Tuồng Việt Nam — Digital Exhibition & AI Try-On</title>
+    <meta name="description" content="Khám phá bộ sưu tập 117 mặt nạ Tuồng truyền thống Việt Nam kết hợp trải nghiệm thực tế ảo AI Virtual Try-On." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="author" content="Tuong Mask Archive" />
+    <meta name="keywords" content="mặt nạ tuồng, tuồng việt nam, nghệ thuật truyền thống, digital exhibition, AI try-on, Vietnamese theater masks" />
+
+    <!-- ── Geo Meta (rule: geo-meta) ───────────────────────────── -->
+    <meta name="geo.region" content="VN" />
+    <meta name="geo.placename" content="Việt Nam" />
+    <meta name="language" content="Vietnamese" />
+
+    <!-- ── Favicon & PWA / Mobile Manifest ─────────────────────── -->
+    <link rel="apple-touch-icon" href="/logo_tuong.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- ── Canonical (rule: canonical-url, trailing-slash) ──────── -->
+    <link rel="canonical" href="https://tuongmask.vn/" />
+
+    <!-- ── Inline Critical CSS — above-the-fold first paint ────── -->
+    <style>
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{position:relative}
+      body{background-color:#000000;color:#ebe5ce;font-family:Arial,sans-serif;min-height:100dvh;overflow-x:hidden}
+      #root{display:flex;flex-direction:column;min-height:100dvh}
+    </style>
+
+    <!-- ── Open Graph (rule: og-tags, og-url-match, og-image-size) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mặt Nạ Tuồng Việt Nam" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:url" content="https://tuongmask.vn/" />
+    <meta property="og:title" content="Mặt Nạ Tuồng Việt Nam — Digital Exhibition & AI Try-On" />
+    <meta property="og:description" content="Khám phá bộ sưu tập 117 mặt nạ Tuồng truyền thống Việt Nam kết hợp trải nghiệm thực tế ảo AI Virtual Try-On." />
+    <meta property="og:image" content="https://tuongmask.vn/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mặt Nạ Tuồng Việt Nam — Digital Exhibition" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- ── Twitter Card (rule: twitter-cards) ───────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mặt Nạ Tuồng Việt Nam — Digital Exhibition" />
+    <meta name="twitter:description" content="Bảo tồn và triển lãm nghệ thuật mặt nạ Tuồng truyền thống Việt Nam qua công nghệ AI." />
+    <meta name="twitter:image" content="https://tuongmask.vn/og-image.png" />
+    <meta name="twitter:image:alt" content="Mặt Nạ Tuồng Việt Nam — Digital Exhibition" />
+
+    <!-- ── Structured Data / JSON-LD (Schema.org) ───────────────── -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Tuong Mask Archive",
+        "url": "https://tuongmask.vn/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://tuongmask.vn/logo_tuong.png",
+          "width": 512,
+          "height": 512
+        },
+        "description": "Bảo tàng số lưu trữ và triển lãm mặt nạ Tuồng truyền thống Việt Nam với công nghệ AI Virtual Try-On.",
+        "inLanguage": "vi",
+        "sameAs": [
+          "https://www.facebook.com/share/p/1JVhwopstn/"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "general",
+          "availableLanguage": ["Vietnamese", "English"]
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Mặt Nạ Tuồng Việt Nam",
+        "url": "https://tuongmask.vn/",
+        "description": "Triển lãm số 117 mặt nạ Tuồng truyền thống Việt Nam với AI Virtual Try-On.",
+        "inLanguage": "vi",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://tuongmask.vn/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Trang Chủ",
+            "item": "https://tuongmask.vn/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Bộ Sưu Tập Mặt Nạ",
+            "item": "https://tuongmask.vn/#gallery"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "AI Virtual Try-On",
+            "item": "https://tuongmask.vn/#ai-try-on"
+          }
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "ExhibitionEvent",
+        "name": "Triển Lãm Số Mặt Nạ Tuồng Việt Nam",
+        "description": "Kho tàng 117 mặt nạ Tuồng truyền thống Việt Nam và trải nghiệm thực tế ảo AI Virtual Try-On.",
+        "url": "https://tuongmask.vn/",
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://tuongmask.vn/og-image.png",
+          "width": 1200,
+          "height": 630
+        },
+        "inLanguage": "vi",
+        "isAccessibleForFree": true,
+        "datePublished": "2026-08-01",
+        "dateModified": "2026-08-24",
+        "organizer": {
+          "@type": "Organization",
+          "name": "Tuong Mask Archive",
+          "url": "https://tuongmask.vn/"
+        },
+        "location": {
+          "@type": "VirtualLocation",
+          "name": "Triển Lãm Trực Tuyến — tuongmask.vn",
+          "url": "https://tuongmask.vn/"
+        },
+        "about": {
+          "@type": "Thing",
+          "name": "Mặt nạ Tuồng",
+          "description": "Nghệ thuật mặt nạ trong Tuồng cổ điển Việt Nam, bắt nguồn từ thế kỷ 10, là di sản văn hóa phi vật thể độc đáo của dân tộc."
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "VND",
+          "availability": "https://schema.org/InStock"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Bộ Sưu Tập 117 Mặt Nạ Tuồng",
+        "url": "https://tuongmask.vn/#gallery",
+        "description": "Bộ sưu tập số gồm 117 mặt nạ Tuồng truyền thống Việt Nam, mỗi mặt nạ mang ý nghĩa tượng trưng về lòng trung thành, phẫn nộ và thần thánh.",
+        "inLanguage": "vi",
+        "isAccessibleForFree": true,
+        "numberOfItems": 117,
+        "about": {
+          "@type": "Thing",
+          "name": "Tuồng cổ điển Việt Nam"
+        }
+      }
+    ]
+    </script>
   </head>
   <body>
+    <noscript>
+      <div style="background:#000;color:#ebe5ce;font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;text-align:center;padding:2rem;gap:1rem;">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.4em;color:#ff1919;">Cần bật JavaScript</p>
+        <p style="font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;">Triển lãm Mặt Nạ Tuồng yêu cầu JavaScript</p>
+        <p style="font-size:0.8rem;color:rgba(235,229,206,0.55);max-width:36ch;line-height:1.6;">Vui lòng bật JavaScript trong trình duyệt của bạn để trải nghiệm bộ sưu tập 117 mặt nạ Tuồng truyền thống Việt Nam và tính năng AI Virtual Try-On.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,10 +1,12 @@
 function resolveMaskImage(imageUrl) {
-  if (!imageUrl || imageUrl.startsWith('/')) return imageUrl;
-  if (imageUrl.startsWith('http')) {
-    const { pathname } = new URL(imageUrl);
-    return pathname.startsWith('/static/images/') ? pathname : imageUrl;
+  if (!imageUrl) return imageUrl;
+  const webpUrl = imageUrl.replace(/\.png$/i, '.webp');
+  if (webpUrl.startsWith('/')) return webpUrl;
+  if (webpUrl.startsWith('http')) {
+    const { pathname } = new URL(webpUrl);
+    return pathname.startsWith('/static/images/') ? pathname : webpUrl;
   }
-  return `/${imageUrl}`;
+  return `/${webpUrl}`;
 }
 
 function setFallbackImage(event, imageUrl) {
@@ -52,6 +54,8 @@ export default function MaskSelectorGrid({
               <img
                 src={resolveMaskImage(mask.image_url)}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className={`size-full object-contain transition-transform duration-300 ${selected ? 'scale-110' : 'scale-100 group-hover:scale-110'}`}
                 onError={(event) => setFallbackImage(event, mask.image_url)}
               />

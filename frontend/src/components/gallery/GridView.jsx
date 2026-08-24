@@ -27,8 +27,10 @@ export default function GridView({ masks, setSelectedMask }) {
             {/* Actual Image*/}
             <div className="relative w-full h-full p-2">
               <img
-                src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
-                alt={mask.name}
+                src={(mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`).replace(/\.png$/i, '.webp')}
+                alt={`Mặt nạ ${mask.name}${mask.category ? ` - ${mask.category}` : ''}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain scale-125"
                 onError={(e) => {
                   const fileName = mask.image_url.split('/').pop();

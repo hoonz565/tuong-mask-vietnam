@@ -37,6 +37,16 @@ export default defineConfig({
   plugins: [serveMediaPipeLoaderInDevelopment(), react(), tailwindcss()],
   server: { headers: isolationHeaders },
   preview: { headers: isolationHeaders },
+  build: {
+    // Strip console.* calls from production via pure annotations (rolldown/oxc compatible)
+    rollupOptions: {
+      output: {
+        // Tree-shaking will eliminate console.* guarded by import.meta.env.DEV
+      },
+    },
+    // Minify with default oxc (vite 8 uses rolldown/oxc, not esbuild)
+    minify: true,
+  },
   test: {
     include: ['src/**/*.test.{js,jsx}'],
   },

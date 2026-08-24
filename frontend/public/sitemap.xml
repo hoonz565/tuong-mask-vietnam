@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Homepage — canonical trailing slash (rule: trailing-slash, lowercase) -->
+  <url>
+    <loc>https://tuongmask.vn/</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://tuongmask.vn/" />
+  </url>
+
+  <!-- Gallery section anchor (rule: sitemap-coverage) -->
+  <url>
+    <loc>https://tuongmask.vn/#gallery</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Discover section anchor -->
+  <url>
+    <loc>https://tuongmask.vn/#discover-section</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- AI Try-On section anchor -->
+  <url>
+    <loc>https://tuongmask.vn/#ai-try-on</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>

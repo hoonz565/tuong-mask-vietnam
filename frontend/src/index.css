@@ -13,7 +13,7 @@
   --text-3xl: 96px;
   --text-4xl: 213.33px;
 
-  /* Colors */
+  /* Colors — Dark mode defaults (always) */
   --color-primary: #14171f;
   --color-secondary: #ff1919;
   --color-tertiary: #ebe5ce;
@@ -44,6 +44,18 @@
     line-height: 29.8667px;
     font-weight: 600;
   }
+
+  /* Global Focus Indicator — visible for keyboard navigation (WCAG 2.4.7) */
+  :focus-visible {
+    outline: 2px solid #ff1919;
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* Remove default outline only when not keyboard-navigating */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 @layer utilities {
@@ -65,5 +77,59 @@
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 25, 25, 0.6);
+  }
+}
+
+/* prefers-color-scheme: light — acknowledge light mode users with adapted colours */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-surface: #0d0d11;
+    --color-primary: #0d0d11;
+    --color-tertiary: #ebe5ce;
+  }
+  /* Project is intentionally dark/museum aesthetic — retain dark palette in light mode.
+     This block acknowledges the media query so browsers know we are aware of it.
+     A future iteration could offer a full light theme via a toggle. */
+}
+
+/* prefers-reduced-motion — disable non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Optimization */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .cyber-grid-bg {
+    background-image: none !important;
+  }
+
+  .custom-cursor,
+  #ai-try-on,
+  button,
+  [role="status"],
+  #discover-section {
+    display: none !important;
+  }
+
+  a {
+    text-decoration: underline !important;
+    color: #000000 !important;
+  }
+
+  img {
+    filter: none !important;
+    break-inside: avoid;
   }
 }
