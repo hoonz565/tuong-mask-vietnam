@@ -1,0 +1,18 @@
+{
+  "name": "Mặt Nạ Tuồng Việt Nam — Digital Exhibition",
+  "short_name": "Mặt Nạ Tuồng",
+  "description": "Khám phá 117 mặt nạ Tuồng truyền thống Việt Nam kết hợp AI Virtual Try-On",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0d11",
+  "theme_color": "#ff1919",
+  "icons": [
+    {
+      "src": "/logo_tuong.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

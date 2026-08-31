@@ -108,8 +108,10 @@ function MaskMarquee({ masks }) {
               transition={{ type: 'spring', stiffness: 400, damping: 22 }}
             >
               <img
-                src={mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`}
+                src={(mask.image_url.startsWith('/') ? mask.image_url : `/${mask.image_url}`).replace(/\.png$/i, '.webp')}
                 alt={mask.name}
+                loading="lazy"
+                decoding="async"
                 className="object-contain select-none h-full w-full"
                 draggable={false}
                 style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}
@@ -199,10 +201,61 @@ export default function GalleryFooter({ masks = [] }) {
         <MaskMarquee masks={masks} />
       )}
 
+      {/* ── ABOUT & CONTACT ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 px-6 py-6 bg-black/10 border-t border-black/15 text-black/60 text-[11px] font-mono tracking-widest uppercase">
+
+        {/* About */}
+        <div className="md:border-r border-black/20 pr-6 mb-4 md:mb-0">
+          <p className="text-black/80 font-bold mb-1">VỀ DỰ ÁN</p>
+          <p className="normal-case tracking-normal text-[10px] leading-relaxed text-black/50">
+            Tuong Mask Archive là bảo tàng số bảo tồn 117 mặt nạ Tuồng cổ điển Việt Nam — di sản văn hóa phi vật thể hơn 10 thế kỷ.
+          </p>
+        </div>
+
+        {/* Links */}
+        <div className="md:border-r border-black/20 px-0 md:px-6 mb-4 md:mb-0 flex flex-col gap-1">
+          <p className="text-black/80 font-bold mb-1">LIÊN KẾT</p>
+          <a href="/#gallery" className="hover:text-black transition-colors normal-case tracking-normal text-[10px]">Bộ sưu tập mặt nạ</a>
+          <a href="/#discover-section" className="hover:text-black transition-colors normal-case tracking-normal text-[10px]">Khám phá mặt nạ của bạn</a>
+          <a href="/#ai-try-on" className="hover:text-black transition-colors normal-case tracking-normal text-[10px]">AI Virtual Try-On</a>
+          <a href="/sitemap.xml" className="hover:text-black transition-colors normal-case tracking-normal text-[10px]">Sơ đồ trang</a>
+        </div>
+
+        {/* Contact & Share */}
+        <div className="pl-0 md:pl-6 flex flex-col gap-2">
+          <p className="text-black/80 font-bold mb-1">CHIA SẺ</p>
+          <div className="flex gap-3">
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://tuongmask.vn/')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chia sẻ lên Facebook"
+              className="flex items-center gap-1 text-[10px] normal-case tracking-normal hover:text-black transition-colors"
+            >
+              Facebook
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent('https://tuongmask.vn/')}&text=${encodeURIComponent('Khám phá 117 mặt nạ Tuồng truyền thống Việt Nam')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chia sẻ lên X (Twitter)"
+              className="flex items-center gap-1 text-[10px] normal-case tracking-normal hover:text-black transition-colors"
+            >
+              X / Twitter
+            </a>
+          </div>
+          <p className="normal-case tracking-normal text-[10px] leading-relaxed text-black/50 mt-1">
+            Nội dung miễn phí, không quảng cáo, không theo dõi.
+          </p>
+        </div>
+      </div>
+
       {/* ── BOTTOM META BAR ── */}
-      <div className="flex items-center justify-between px-6 py-2 bg-black/10 border-t border-black/15">
-        <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-black/40">TUONG_CLASSICAL_THEATER</span>
-        <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-black/40">VERSION 1.0.0-RC1</span>
+      <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-2 bg-black/15 border-t border-black/15 gap-1">
+        <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-black/40">TUONG_CLASSICAL_THEATER · VIETNAM · EST. 10TH CENTURY</span>
+        <span className="text-[9px] font-mono uppercase tracking-[0.3em] text-black/40">
+          © {new Date().getFullYear()} Tuong Mask Archive — Tác phẩm: Hoàng Song Hào
+        </span>
       </div>
     </footer>
   );

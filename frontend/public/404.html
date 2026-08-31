@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — Trang không tìm thấy | Mặt Nạ Tuồng Việt Nam</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --color-surface: #000000;
+        --color-secondary: #ff1919;
+        --color-tertiary: #ebe5ce;
+        --color-inverse: #252525;
+      }
+      body {
+        background-color: var(--color-surface);
+        color: var(--color-tertiary);
+        font-family: Arial, sans-serif;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 38 v4 M38 40 h4' stroke='%23ff1919' stroke-width='1' opacity='0.15'/%3E%3C/svg%3E");
+        background-size: 80px 80px;
+      }
+      .code {
+        font-size: clamp(5rem, 20vw, 10rem);
+        font-weight: 900;
+        line-height: 1;
+        color: var(--color-secondary);
+        letter-spacing: -0.04em;
+        opacity: 0.9;
+      }
+      .label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.45em;
+        color: var(--color-secondary);
+        margin-top: 0.75rem;
+      }
+      h1 {
+        font-size: clamp(1rem, 3vw, 1.5rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin-top: 2rem;
+        color: var(--color-tertiary);
+      }
+      p {
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        color: rgba(235,229,206,0.55);
+        max-width: 36ch;
+        line-height: 1.6;
+      }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2.5rem;
+        padding: 0.75rem 1.75rem;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.35em;
+        font-weight: 700;
+        text-decoration: none;
+        background-color: var(--color-secondary);
+        color: var(--color-surface);
+        transition: opacity 0.2s;
+      }
+      .back:hover { opacity: 0.85; }
+      .back:focus-visible {
+        outline: 2px solid var(--color-secondary);
+        outline-offset: 3px;
+      }
+      .corner {
+        position: absolute;
+        width: 10px; height: 10px;
+        border-color: var(--color-secondary);
+        border-style: solid;
+        opacity: 0.6;
+      }
+      .wrapper {
+        position: relative;
+        padding: 3rem;
+        border: 1px solid rgba(255,25,25,0.15);
+      }
+      .corner.tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
+      .corner.tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; }
+      .corner.bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; }
+      .corner.br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <span class="corner tl"></span>
+      <span class="corner tr"></span>
+      <span class="corner bl"></span>
+      <span class="corner br"></span>
+      <div class="code">404</div>
+      <div class="label">ERROR_CODE :: NOT_FOUND</div>
+      <h1>Trang không tồn tại</h1>
+      <p>Trang bạn đang tìm kiếm đã bị xoá, đổi địa chỉ, hoặc chưa bao giờ tồn tại trong kho lưu trữ này.</p>
+      <a href="/" class="back">← Quay về Triển Lãm</a>
+    </div>
+  </body>
+</html>

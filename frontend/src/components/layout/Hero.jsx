@@ -94,13 +94,8 @@ export default function Hero() {
               className="font-black uppercase leading-none text-tertiary"
               style={{ fontSize: 'clamp(2.8rem, 6.5vw, 7rem)', letterSpacing: '-0.02em' }}
             >
-              VIETNAMESE
-            </h1>
-            <h1
-              className="font-black uppercase leading-none text-tertiary"
-              style={{ fontSize: 'clamp(2.8rem, 6.5vw, 7rem)', letterSpacing: '-0.02em' }}
-            >
-              TUONG MASKS
+              <span className="block">VIETNAMESE</span>
+              <span className="block">TUONG MASKS</span>
             </h1>
           </motion.div>
 

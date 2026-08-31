@@ -1,0 +1,61 @@
+# Mặt Nạ Tuồng Việt Nam — AI Documentation for LLMs
+
+> This file follows the llms.txt specification (https://llmstxt.org/).
+> Last updated: 2026-08-24
+
+## About
+
+Tuong Mask Archive is a digital exhibition preserving and presenting 117 traditional Vietnamese Tuong (Classical Theater) masks. The project combines cultural heritage preservation with AI technology through an on-device Virtual Try-On experience.
+
+## Project Summary
+
+- **Name:** Mặt Nạ Tuồng Việt Nam (Vietnamese Tuong Masks)
+- **URL:** https://tuongmask.vn/
+- **Type:** Digital Art Exhibition / Cultural Heritage Archive
+- **Language:** Vietnamese (vi-VN)
+- **Collection size:** 117 Tuong masks
+- **Technology:** React SPA, AI Virtual Try-On (WebAssembly / on-device, no data sent to servers)
+
+## What Is Tuong?
+
+Tuong (Hát Bội) is Vietnam's classical theater form, originating in the 10th century. Each mask represents a character archetype:
+- **Red mask:** Loyalty, righteousness (trung nghĩa)
+- **Black mask:** Steadfastness, integrity (cương trực)
+- **White mask:** Cunning, deceit (gian tà)
+- **Green mask:** Supernatural beings, forest spirits
+- **Gold mask:** Divinity, royalty (thần linh, vương giả)
+
+## Collection
+
+The archive contains 117 digitized masks organized by category:
+- Heroic characters (Nhân vật anh hùng)
+- Villains (Nhân vật phản diện)
+- Divine figures (Thần linh)
+- Warriors (Võ tướng)
+- Ministers (Văn thần)
+
+## Features
+
+1. **Gallery View:** Browse all 117 masks in a responsive grid
+2. **Detailed View:** Full-screen mask detail with cultural context
+3. **Discover Your Mask:** Interactive quiz to match users with a mask character
+4. **AI Virtual Try-On:** Real-time camera overlay using on-device AI (MediaPipe + ONNX Runtime Web)
+
+## Technical Notes
+
+- All AI processing is 100% on-device (WebAssembly/WebGPU) — no camera data is ever sent to any server
+- Images served in WebP format with PNG fallback
+- Progressive Web App: installable, offline-capable via Service Worker
+- WCAG 2.1 accessible with ARIA labels, keyboard navigation, and focus indicators
+
+## Content Policy
+
+- All mask artwork is credited to the original artist: Hoàng Song Hào
+- Content is free to access (isAccessibleForFree: true)
+- No affiliate links, no advertising, no user tracking
+
+## Contact
+
+For inquiries about the collection or technical collaboration:
+- Repository: Vietnamese Tuong Mask Digital Archive
+- Exhibition URL: https://tuongmask.vn/

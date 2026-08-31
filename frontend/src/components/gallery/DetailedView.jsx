@@ -11,6 +11,7 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks, try
     if (containerRef.current) {
       // Scroll to the top of the container, minus a 60px header/padding buffer
       const topOffset = containerRef.current.getBoundingClientRect().top + window.scrollY - 60;
+
       window.scrollTo({ top: topOffset, behavior: 'smooth' });
     }
   }, [selectedMask]);
@@ -36,8 +37,9 @@ export default function DetailedView({ selectedMask, setSelectedMask, masks, try
             key={selectedMask.id}
             initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
             animate={{ opacity: 1, scale: 1.3, filter: 'blur(0px)' }}
-            src={selectedMask.image_url.startsWith('/') ? selectedMask.image_url : `/${selectedMask.image_url}`}
-            alt={selectedMask.name}
+            src={(selectedMask.image_url.startsWith('/') ? selectedMask.image_url : `/${selectedMask.image_url}`).replace(/\.png$/i, '.webp')}
+            alt={`Chi tiết mặt nạ ${selectedMask.name}${selectedMask.category ? ` - ${selectedMask.category}` : ''}`}
+            decoding="async"
             className="w-full h-full object-contain relative z-10"
             onError={(e) => {
               const fileName = selectedMask.image_url.split('/').pop();

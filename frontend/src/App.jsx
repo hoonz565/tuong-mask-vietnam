@@ -6,6 +6,8 @@ import Hero from './components/layout/Hero';
 import MaskGallery from './components/gallery/MaskGallery';
 import DiscoverMask from './components/gallery/DiscoverMask';
 import GalleryFooter from './components/layout/GalleryFooter';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+import OfflineBanner from './components/ui/OfflineBanner';
 import { getAllMasks } from './api/maskService';
 import { getTryOnTemplates } from './api/tryOnService';
 import { resolveTryOnRelease } from './config/tryOnRelease';
@@ -70,6 +72,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-surface text-tertiary cyber-grid-bg relative overflow-hidden flex flex-col items-center">
+      <OfflineBanner />
       <CustomCursor />
       <BackgroundText />
       <Header />
@@ -78,32 +81,38 @@ function App() {
       <Hero />
 
       {/* Main Mask Gallery */}
-      <MaskGallery
-        masks={masks}
-        loading={loading}
-        error={error}
-        tryOnTemplates={tryOnTemplates}
-        onTryOn={(templateId) => setRequestedTemplateId(templateId)}
-        onRetry={retryMasks}
-      />
+      <ErrorBoundary title="Không thể hiển thị bộ sưu tập mặt nạ" onReset={retryMasks}>
+        <MaskGallery
+          masks={masks}
+          loading={loading}
+          error={error}
+          tryOnTemplates={tryOnTemplates}
+          onTryOn={(templateId) => setRequestedTemplateId(templateId)}
+          onRetry={retryMasks}
+        />
+      </ErrorBoundary>
 
       {/* ── DISCOVER YOUR MASK — Cyberpunk Divider ──────────── */}
       <div id="discover-section" className="w-full mt-16 relative z-10 px-6 md:px-12">
-        <DiscoverMask />
+        <ErrorBoundary title="Lỗi khi hiển thị phần trắc nghiệm mặt nạ">
+          <DiscoverMask />
+        </ErrorBoundary>
       </div>
 
       {TRY_ON_RELEASE.enabled && (
-        <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
-          <TryOnFeature
-            masks={masks}
-            templates={tryOnTemplates}
-            loading={tryOnLoading}
-            error={tryOnError}
-            requestedTemplateId={requestedTemplateId}
-            onRetry={retryTryOnTemplates}
-            onRequestHandled={() => setRequestedTemplateId(null)}
-          />
-        </Suspense>
+        <ErrorBoundary title="Không thể khởi động AI Try-On" onReset={retryTryOnTemplates}>
+          <Suspense fallback={<div className="h-24" aria-hidden="true" />}>
+            <TryOnFeature
+              masks={masks}
+              templates={tryOnTemplates}
+              loading={tryOnLoading}
+              error={tryOnError}
+              requestedTemplateId={requestedTemplateId}
+              onRetry={retryTryOnTemplates}
+              onRequestHandled={() => setRequestedTemplateId(null)}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {/* Footer */}
